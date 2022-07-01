@@ -590,7 +590,13 @@ export function lobbyReducer(state = initialState, action) {
 
 export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
     //console.log(id, name, password)
-    let socket = new WebSocket(`wss://${SOCKET_URL}?room_id=${id}&name=${name}&password=${password}&token=${token}`);
+    let socket;
+    try {
+        socket = new WebSocket(`ws://${SOCKET_URL}?room_id=${id}&name=${name}&password=${password}&token=${token}`);
+    } catch(e){
+        console.log("An error occurred: ", e)
+        return dispatch({type: JOIN_ROOM_ERROR, error: "Failed to join room"})
+    }
     
     dispatch({type: SET_SOCKET, socket})
 

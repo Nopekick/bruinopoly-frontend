@@ -22,7 +22,6 @@ import CHANCE from './data/chance'
 import CHEST from './data/chest'
 import {TILES, TileType} from './data/tiles'
 import PROPERTIES from './data/properties'
-import TouchRipple from '@material-ui/core/ButtonBase/TouchRipple';
 
 let sleep = (sec) => {
     return new Promise((res, rej)=>{
@@ -32,8 +31,10 @@ let sleep = (sec) => {
 
 // let API_URL = "http://localhost:3000"
 // let SOCKET_URL = "localhost:8080"
-let API_URL = "https://bruinopoly-backend.herokuapp.com"
-let SOCKET_URL = "bruinopoly-backend.herokuapp.com"
+//let API_URL = "https://bruinopoly-backend.herokuapp.com"
+//let SOCKET_URL = "bruinopoly-backend.herokuapp.com"
+let API_URL = process.env.REACT_APP_API_URL;
+let SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
 let majors = ["Aerospace Engineering",
     "African American Studies",
@@ -239,10 +240,10 @@ let playerDetails = [
     {color: "#A8DC96", img: cat},
     {color: "#F7B62A", img: squirrel}, 
     {color: "purple", img: bman}, 
-    {color: "yellow", img: bman}, 
-    {color: "green", img: bman}, 
+    {color: "yellow", img: cat}, 
+    {color: "green", img: squirrel}, 
     {color: "cyan", img: bman},
-    {color: "orange", img: bman}
+    {color: "orange", img: cat}
 ]
 
 let getColor = (tile) => {
