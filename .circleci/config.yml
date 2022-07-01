@@ -8,9 +8,10 @@ jobs:
       - image: cimg/node:17.6.0
     steps:
       - checkout
-      - run: npm install wait-on
+    #/- run: npm install wait-on
       - run: npm install
-      - run: npm start & npx wait-on http://localhost:3000
+     # - run: npm start & npx wait-on http://localhost:3000
+      - run: npm start
 # Orbs are reusable packages of CircleCI configuration that you may share across projects, enabling you to create encapsulated, parameterized commands, jobs, and executors that can be used across multiple projects.
 # See: https://circleci.com/docs/2.0/orb-intro/
 orbs:
