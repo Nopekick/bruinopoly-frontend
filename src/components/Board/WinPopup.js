@@ -1,6 +1,6 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 export default function Winner(props){
     const classes = useStyles();
@@ -15,7 +15,7 @@ export default function Winner(props){
             <div className={classes.shadow}></div>
             <div className={classes.container}>
                 <div className={classes.topBox}>
-                    GAME OVER! The winner is {props.winner.winner}
+                    GAME OVER! The winner is {props.winner.winner} with ${props.winner.maxWealth}
                 </div>
 
                 <button onClick={handleClose} className={classes.button}>Back to Lobby</button>

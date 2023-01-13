@@ -18,11 +18,9 @@ export default function About(props){
                 <div className={classes.roomsText} style={{backgroundColor: '#A8DDD7', cursor: 'pointer'}} onClick={()=> props.history.push("/")}><div>Back to Lobby</div></div>
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Overview:</div></div>
                 <div className={classes.text}>Bruinopoly, a UCLA-themed monopoly game, was initially a DevX project that aimed to bring together UCLA students during the pandemic and 
-                    make it easier for people to meet new people and make friends. The group responsible for creating Bruinopoly fell apart before it could be launched. I've released
-                    it in this state to gauge interest and see whether I should invest time into improving it.</div>
+                    make it easier for people to meet new people and make friends. The project was never finished, but now it's been resurrected.</div>
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Current State of Bruinopoly:</div></div>
-                <div className={classes.text}>The game is somewhat playable. There are features such as property buying, dorms and apartments to increase rent prices, mortgaging, and trading.
-                    There are also a lot of issues with the game. As they are fixed, they should be removed from here .
+                <div className={classes.text}>I acknowledge the game may be buggy. 
                 </div>
                 <div className={classes.text}>IMPORTANT (Read this)
                     <ul>

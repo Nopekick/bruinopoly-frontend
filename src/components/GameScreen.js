@@ -41,9 +41,17 @@ export default function GameScreen(props){
             <Sidebar user={props.user} started={props.game.hasStarted} game={props.game} players={props.players}/>
             {!props.game.hasStarted && <div className={classes.loadingContainer}>
                 <img alt="paw" className={classes.paw} src={paw}/>
-                <div className={classes.loadingText}>{`GAME WILL BEGIN AFTER ${props.game.startTime}`}</div>
-                {props.host && checkDecode() && <button className={classes.startButton} onClick={handleStart}>Start Game</button>}
-                <button className={classes.startButton} onClick={handleLeave}>Leave Lobby</button>
+                <div className={classes.loadingText}>{`GAME CAN START AFTER ${props.game.startTime}`}</div>
+                {props.host && checkDecode() && 
+                    <button className={classes.startButton} style={{display: 'flex', flexDirection: 'column'}} onClick={handleStart}>
+                        <div>Start Game</div>
+                        <div style={{fontSize: '10px'}}>(you are the lobby leader)</div>
+                    </button>
+                }
+                <button className={classes.startButton} onClick={handleLeave} style={{display: 'flex', flexDirection: 'column'}} >
+                        <div>Leave Lobby</div>
+                        {props.host && checkDecode() && <div style={{fontSize: '10px'}}>(forfeit lobby leader)</div>}
+                </button>
             </div>}
             {props.game.hasStarted && <div className={classes.board} style={heightMatch ? {transform: 'scale(.88)', top: '50px'} : null}>
                 <Board />

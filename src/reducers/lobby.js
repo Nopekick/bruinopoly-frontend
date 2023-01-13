@@ -1,5 +1,4 @@
 import axios from 'axios';
-//import { ar } from 'date-fns/locale';
 import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, TILES} from '../config';
 
 
@@ -18,6 +17,7 @@ const REQUEST_START = "REQUEST_START"
 const START_GAME = "START_GAME"
 const START_TURN = "START_TURN"
 const END_TURN = "END_TURN"
+const SET_HOST_SELF = "SET_HOST_SELF"
 const SET_HOST = "SET_HOST"
 const UPDATE_PLAYERS = "UPDATE_PLAYERS"
 const ADD_MESSAGE = "ADD_MESSAGE"
@@ -168,8 +168,17 @@ export function lobbyReducer(state = initialState, action) {
             return {...state}
         case SET_SOCKET:
             return {...state, socket: action.socket}
-        case SET_HOST: 
+        case SET_HOST_SELF: 
+            if(action.token) {
+                return {...state, isHost: true, token: action.token}
+            }
             return {...state, isHost: true}
+        case SET_HOST:
+            //new player has not yet received game/room info, will know host when that is received
+            if (state.game === null) return {...state}
+
+            //current lobby members changing host value 
+            return {...state, game: {...state.game, host: action.host}}
         case START_GAME:
             return {...state, game: action.game}
         case START_TURN:
@@ -582,7 +591,7 @@ export function lobbyReducer(state = initialState, action) {
             // make other popups false?
             if(state.socket !== null)
                 state.socket.close()
-            return {...state, winPopup: {winner: action.winner}}
+            return {...state, winPopup: {winner: action.winner, maxWealth: action.maxWealth}}
         default:
             return state;
     }
@@ -610,7 +619,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
 
     socket.addEventListener('message', function(event) {
         let data = JSON.parse(event.data)
-        //console.log('Message from server ', data);
+        console.log('Message from server ', data);
 
         switch(data[0]){
             case 'join-error':
@@ -627,14 +636,17 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                 dispatch({type: ADD_MESSAGE, message: data[1], send: false})
                 break;
             case 'host':
-                dispatch({type: SET_HOST})
+                dispatch({type: SET_HOST_SELF, token: data[1].token})
+                break;
+            case 'new-host':
+                dispatch({type: SET_HOST, host: data[1]})
                 break;
             case 'can-start':
                 dispatch({type: START_GAME, game: data[1].game})
                 break;
             case 'game-over':
                 console.log("The winner has id:",data[1].winner)
-                dispatch({type: GAME_OVER, winner: data[1].winner})
+                dispatch({type: GAME_OVER, winner: data[1].winner, maxWealth: data[1].maxWealth})
                 //dispatch event to close socket connection, display winner popup with button to leave game
                 break;
             case 'your-turn':
@@ -696,7 +708,8 @@ export const createRoom = (data) => async (dispatch) => {
     //console.log(data)
     try {  
         let result = await axios.post(`${API_URL}/rooms`, data);
-       // console.log(result.data);
+        console.log(result.data);
+
         dispatch({type: ADD_NEW_ROOM, room: result.data.room, token: result.data.token})
     } catch(e){
         dispatch({type: CREATE_ROOM_ERROR, error: e})
