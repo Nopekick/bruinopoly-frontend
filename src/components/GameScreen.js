@@ -4,6 +4,7 @@ import Board from '../containers/Board';
 import {Redirect} from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles';
 import Sidebar from './Sidebar';
+import WinPopup from './Board/WinPopup'
 import Chat from './Chat';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
@@ -36,6 +37,7 @@ export default function GameScreen(props){
 
     return(
         <div className={classes.main}>
+            {props.winPopup && <WinPopup winner={props.winPopup}/>}
             <div className={classes.topBar}><p style={{display: 'inline-block', margin: 0, padding: 0, paddingLeft: '30px', fontSize: 23, 
                 color: 'purple', cursor: 'pointer', paddingTop: '12px'}} onClick={handleLeave}>Leave Lobby (Testing)</p></div>
             <Sidebar user={props.user} started={props.game.hasStarted} game={props.game} players={props.players}/>

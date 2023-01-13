@@ -13,7 +13,6 @@ import CardPopup from './CardPopup'
 import TradePopup from './Trade'
 import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
-import WinPopup from './WinPopup'
 
 export default function Board(props){
     const classes = useStyles();
@@ -28,7 +27,6 @@ export default function Board(props){
             {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup]} chance={true} name={props.name}/>}
             {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.double} name={props.name}/>}
             {props.turn && <DiceBox />}
-            {props.winPopup && <WinPopup winner={props.winPopup}/>}
             <img draggable="false" alt="bruinopoly text" className={classes.Bruinopoly} src={Bruinopoly} />
             <img draggable="false" alt="B" className={classes.B} src={B} />
             <img draggable="false" alt="financial aid card" className={classes.FinAidCards} src={FinAidCards} />
