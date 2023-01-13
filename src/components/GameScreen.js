@@ -4,6 +4,7 @@ import Board from '../containers/Board';
 import {Redirect} from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles';
 import Sidebar from './Sidebar';
+import WinPopup from './Board/WinPopup'
 import Chat from './Chat';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
@@ -36,14 +37,23 @@ export default function GameScreen(props){
 
     return(
         <div className={classes.main}>
+            {props.winPopup && <WinPopup winner={props.winPopup}/>}
             <div className={classes.topBar}><p style={{display: 'inline-block', margin: 0, padding: 0, paddingLeft: '30px', fontSize: 23, 
                 color: 'purple', cursor: 'pointer', paddingTop: '12px'}} onClick={handleLeave}>Leave Lobby (Testing)</p></div>
             <Sidebar user={props.user} started={props.game.hasStarted} game={props.game} players={props.players}/>
             {!props.game.hasStarted && <div className={classes.loadingContainer}>
                 <img alt="paw" className={classes.paw} src={paw}/>
-                <div className={classes.loadingText}>{`GAME WILL BEGIN AFTER ${props.game.startTime}`}</div>
-                {props.host && checkDecode() && <button className={classes.startButton} onClick={handleStart}>Start Game</button>}
-                <button className={classes.startButton} onClick={handleLeave}>Leave Lobby</button>
+                <div className={classes.loadingText}>{`GAME CAN START AFTER ${props.game.startTime}`}</div>
+                {props.host && checkDecode() && 
+                    <button className={classes.startButton} style={{display: 'flex', flexDirection: 'column'}} onClick={handleStart}>
+                        <div>Start Game</div>
+                        <div style={{fontSize: '10px'}}>(you are the lobby leader)</div>
+                    </button>
+                }
+                <button className={classes.startButton} onClick={handleLeave} style={{display: 'flex', flexDirection: 'column'}} >
+                        <div>Leave Lobby</div>
+                        {props.host && checkDecode() && <div style={{fontSize: '10px'}}>(forfeit lobby leader)</div>}
+                </button>
             </div>}
             {props.game.hasStarted && <div className={classes.board} style={heightMatch ? {transform: 'scale(.88)', top: '50px'} : null}>
                 <Board />

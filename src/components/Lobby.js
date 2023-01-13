@@ -3,12 +3,11 @@ import {Redirect} from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles';
 // import bruinopoly from '../assets/bruinopoly.png'
 import Room from '../components/Room.js'
-import { FormHelperText } from '@material-ui/core';
 import ClearIcon from '@material-ui/icons/Clear';
 import blob1 from '../assets/blob1.png'
 import blob2 from '../assets/blob2.png'
 import dropdown from '../assets/dropdown.png'
-import {times, minGameTime} from '../config'
+import {minGameTime } from '../config'
 
 export default function Lobby(props){
     const classes = useStyles();
@@ -16,7 +15,10 @@ export default function Lobby(props){
 
     const [display, setDisplay] = useState(false);
     const [name, setName] = useState("");
-    const [time, setTime] = useState("1:00 PM PST");
+    const [startMinute, setStartMinute] = useState(0);
+    const [startHour, setStartHour] = useState(12);
+    const [startDescriptor, setStartDescriptor] = useState("AM");
+
     const [length, setLength] = useState(minGameTime);
     const [publicLobby, setPublic] = useState(true);
     const [password, setPassword] = useState("");
@@ -69,6 +71,9 @@ export default function Lobby(props){
     }
 
     let handleCreateRoom = () => {
+        const minute = startMinute < 10 ? "0"+startMinute : startMinute;
+        const time = `${startHour}:${minute} ${startDescriptor} PST`
+
         setDisplay(false);
         let obj = {
             name: name,
@@ -105,19 +110,33 @@ export default function Lobby(props){
                         <input className={classes.roomInput} placeholder="NAME..."
                         onChange={(e)=>{setName(e.target.value)}} />
                     </div>
-                    <div className={classes.createRoomOptionsHolder}>
+                    <div className={`${classes.createRoomOptionsHolder} ${classes.roomOptionsText}`}>
                         <div className={classes.roomOptionsText}>GAME TIME: </div>
-                            <select className={` ${classes.roomFormInput} ${classes.dropdownStyle}`} 
-                            list='times' onChange={(e)=>{setTime(e.target.value)}}>
-                                {times.map((time, i)=>{
-                                    return <option key={i} value={time}>{time}</option>
-                                })}
+                            <select className={classes.roomFormInput} style={{width: '12%', appearance: 'none', marginRight: '-19px'}}
+                                onChange={(e)=>{setStartHour(e.target.value)}}>
+                                {Array.apply(null, Array(12)).map((v, i)=>{
+                                    return <option key={i} value={i+1}>{i+1}</option>
+                                })} 
                             </select>
+                            :
+                            <select className={classes.roomFormInput} style={{width: '13%', appearance: 'none', marginRight: '-14px', marginLeft: '-16px'}}
+                                onChange={(e)=>{setStartMinute(e.target.value)}}>
+                                {Array.apply(null, Array(60)).map((v, i)=>{
+                                    return <option key={i} value={i}>{i < 10 ? "0"+i : i}</option>
+                                })} 
+                            </select>
+                            <select className={classes.roomFormInput} style={{width: '12%', appearance: 'none'}}
+                                onChange={(e)=>{setStartDescriptor(e.target.value)}}>
+                                <option value={"AM"}>AM</option>
+                                <option value={"PM"}>PM</option>
+                            </select>            
+                            PST
                     </div>
                     <div className={classes.createRoomOptionsHolder}>
                         <div className={classes.roomOptionsText}>TIME LIMIT: </div>
                         <select value={length} className={`${classes.roomInput} ${classes.dropdownStyle}`} 
                             onChange={(e)=>{setLength(e.target.value)}} >
+                            <option value={1}>1 MIN</option>
                             {Array.apply(null, Array(12)).map((v, i)=>{
                                 return <option key={i} value={10*i+minGameTime}>{10*i+minGameTime} MIN</option>
                             })}
@@ -131,6 +150,7 @@ export default function Lobby(props){
                     <button onClick={handleCreateRoom} className={classes.createRoomOptions} style={{backgroundColor: '#7A6E5D', width: '240px'}}><div>CREATE</div></button>
                 </div>
         </div></div>}
+
         <div className={classes.main}>
             <img alt="background blob" className={classes.blob1} src={blob1} />
             <img alt="background blob" className={classes.blob2} src={blob2} />
@@ -144,12 +164,13 @@ export default function Lobby(props){
                     <span style={{transform: 'rotate(5.99deg) translate(0px, 8px)'}}>Y</span>
                 </div>
                 <div className={classes.optionsBox}>
-                    <button className={classes.option} onClick={() => setDisplay(true)}><div>CREATE ROOM</div></button>
-                    <button className={classes.option} onClick={()=> props.history.push("/about")}><div>ABOUT</div></button>
-                    <button className={classes.option} onClick={()=> props.history.push("/contact")}><div>CONTACT</div></button>
+                    <button className={classes.option} onClick={() => setDisplay(true)}>CREATE ROOM</button>
+                    <button className={classes.option} onClick={()=> props.history.push("/about")}>ABOUT</button>
+                    <button className={classes.option} onClick={()=> props.history.push("/contact")}>CONTACT</button>
                 </div>
-                <div className={classes.roomsText} style={{backgroundColor: '#A8DDD7'}}><div>SUGGESTED ROOMS</div></div>
-                <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>AVAILABLE ROOMS</div></div>
+                <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}>AVAILABLE ROOMS</div>
+                {(!props.rooms || props.rooms.length === 0) && 
+                        <div className={classes.noRoomsText} >Could not find any games. Reload the page to try again, or create your own game!</div>}
                 <div className={classes.rooms}>
                     {props.rooms && props.rooms.map((room, i)=>{
                         return  <Room onClick={()=>{handleClick(room._id, room.isPrivate)}} key={i} name={room.name} gameTime={room.startTime}
@@ -316,7 +337,7 @@ const useStyles = makeStyles(() => ({
         borderRadius: '30px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     lobbyText: {
         color: '#F6C811',
@@ -354,7 +375,7 @@ const useStyles = makeStyles(() => ({
         cursor: 'pointer'
     },
     roomsText: {
-        margin: '8px',
+        margin: '10px 8px 8px 8px',
         width: '90%',
         height: '70px',
         borderRadius: '17.7303px',
@@ -366,10 +387,17 @@ const useStyles = makeStyles(() => ({
         alignItems: 'center',
         justifyContent: 'center'
     },
+    noRoomsText: {
+        height: '70px', 
+        fontSize: '30px',
+        color: 'black',
+        margin: '40px auto 80px auto',
+        width: '70%'
+    }, 
     rooms: {
         width: '90%',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(184px, 1fr))',
-        justifyItems: 'center'
+        justifyItems: 'center',
     }
 }))

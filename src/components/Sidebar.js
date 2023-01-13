@@ -8,7 +8,7 @@ import mortgage from '../assets/mortgage.png'
 import home from '../assets/home.png'
 import trade from '../assets/trade.png'
 import {playerDetails} from '../config'
-import {parseISO, differenceInSeconds} from 'date-fns'
+import {differenceInSeconds} from 'date-fns'
 
 export default function Sidebar(props){
     const mortgagePopup = useSelector(state => state.lobbyReducer.mortgagePopup)
@@ -17,25 +17,20 @@ export default function Sidebar(props){
 
     const classes = useStyles();
     const turn = useSelector(state => state.lobbyReducer.yourTurn)
-    const players = useSelector(state => state.lobbyReducer.game.players)
-    const player = useSelector(state => state.lobbyReducer.userInfo)
+    // const players = useSelector(state => state.lobbyReducer.game.players)
+    // const player = useSelector(state => state.lobbyReducer.userInfo)
     const [timeLeft, setTimeLeft] = useState("00:00")
     const dispatch = useDispatch()
 
     useEffect(()=>{
-        let diffSec = differenceInSeconds(parseISO(props.game.startDate), new Date())
-        console.log("start time:",parseISO(props.game.startDate))
-
-        if(diffSec/60 > 60){
-            setTimeLeft("60:00+")
-        } else if(diffSec <= 0){
-            setTimeLeft("00:00")
-        } else {
-            setTimeLeft(`${Math.floor(diffSec/60)}:${diffSec % 60}`) 
-        }
+        let diffSec = differenceInSeconds(new Date(props.game.startDate), new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"})))
+        console.log("start time:", props.game.startDate)
 
         let interval = setInterval(()=>{
-            if(diffSec <= 0) return;
+            if(diffSec <= 0) {
+                setTimeLeft("00:00")
+                return clearInterval(interval);
+            } 
 
             diffSec -= 1
 
@@ -43,7 +38,7 @@ export default function Sidebar(props){
                 setTimeLeft("60:00+")
             } else {
                 let sec = (diffSec % 60)
-                setTimeLeft(`${Math.floor(diffSec/60)}:${sec<10? ("0"+sec) :sec}`) 
+                setTimeLeft(`${Math.floor(diffSec/60)}:${sec<10? ("0"+sec) : sec}`) 
             }
         }, 1000)
 
@@ -89,7 +84,7 @@ export default function Sidebar(props){
                 </div>
                 <div className={classes.playersText}>PLAYERS</div>
                 {props.players && props.players.map((player, i)=>{
-                    return <div key={i} className={classes.playersNames}>{player.name.toUpperCase()}</div>
+                    return <div key={i} className={classes.playersNames}>{player.name.toUpperCase()} {props.game.host.hostName === player.name && " (HOST)"}</div>
                 })}
             </div>}
             {props.started && <div className={classes.gameSidebar}>

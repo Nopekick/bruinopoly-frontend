@@ -172,21 +172,19 @@ let majors = ["Aerospace Engineering",
     "Theater and Performance Studies",
     "World Arts and Cultures"
 ]
-let times = ["1:00 PM PST", "1:30 PM PST", "1:00 AM PST", "1:30 AM PST", 
-            "2:00 PM PST", "2:30 PM PST", "2:00 AM PST", "2:30 AM PST", 
-            "3:00 PM PST", "3:30 PM PST", "3:00 AM PST", "3:30 AM PST", 
-            "4:00 PM PST", "4:30 PM PST", "4:00 AM PST", "4:30 AM PST", 
-            "5:00 PM PST", "5:30 PM PST", "5:00 AM PST", "5:30 AM PST", 
-            "6:00 PM PST", "6:30 PM PST", "6:00 AM PST", "6:30 AM PST", 
-            "7:00 PM PST", "7:30 PM PST", "7:00 AM PST", "7:30 AM PST", 
-            "8:00 PM PST", "8:30 PM PST", "8:00 AM PST", "8:30 AM PST", 
-            "9:00 PM PST", "9:30 PM PST", "9:00 AM PST", "9:30 AM PST", 
-            "10:00 PM PST", "10:30 PM PST", "10:00 AM PST", "10:30 AM PST",
-             "11:00 PM PST", "11:30 PM PST", "11:00 AM PST", "11:30 AM PST", 
-             "12:00 PM PST", "12:30 PM PST", "12:00 AM PST", "12:30 AM PST"
-        ]       
 
-const minGameTime = 20
+//Deprecated in favor of more customizable start times 
+let times = [ "12:00 AM PST", "12:30 AM PST", "1:00 AM PST" , "1:30 AM PST" , "2:00 AM PST" , "2:30 AM PST", 
+              "3:00 AM PST" , "3:30 AM PST" , "4:00 AM PST" , "4:30 AM PST" , "5:00 AM PST" , "5:30 AM PST", 
+              "6:00 AM PST" , "6:30 AM PST" , "7:00 AM PST" , "7:30 AM PST" , "8:00 AM PST" , "8:30 AM PST", 
+              "9:00 AM PST" , "9:30 AM PST" , "10:00 AM PST", "10:30 AM PST", "11:00 AM PST", "11:30 AM PST", 
+              "12:00 PM PST", "12:30 PM PST", "1:00 PM PST" , "1:30 PM PST" , "2:00 PM PST" , "2:30 PM PST",
+              "3:00 PM PST" , "3:30 PM PST" , "4:00 PM PST" , "4:30 PM PST" , "5:00 PM PST" , "5:30 PM PST", 
+              "6:00 PM PST" , "6:30 PM PST" , "7:00 PM PST" , "7:30 PM PST" , "8:00 PM PST" , "8:30 PM PST", 
+              "9:00 PM PST" , "9:30 PM PST" , "10:00 PM PST", "10:30 PM PST", "11:00 PM PST", "11:30 PM PST",  
+        ]      
+
+const minGameTime = 20 
 
 let positions = [
     //corner
@@ -276,4 +274,4 @@ let mapIdToName = (players, id) => {
     return other.name
 }
 
-export {majors, API_URL, SOCKET_URL, times, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName}
+export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName}
