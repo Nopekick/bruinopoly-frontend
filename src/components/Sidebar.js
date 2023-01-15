@@ -101,9 +101,9 @@ export default function Sidebar(props){
                 <div className={classes.nameBox}>
                     {props.game && props.game.players.map((player, i) => {
                         if(player._id === props.user.id) return null;
-                        return <PlayerBanner key={i} name={player.name} money={player.money} token={playerDetails[i].img} />
+                        return <PlayerBanner color={playerDetails[i].color} key={i} name={player.name} money={player.money} token={playerDetails[i].img} />
                     })}
-                </div>
+                </div> 
             </div>}
         </div>
     )
@@ -178,8 +178,8 @@ const useStyles = makeStyles(() => ({
         lineHeight: '28px'
     },
     nameBox: {
-        marginTop: '14px',
-        height: '380px',
-        overflow: 'scroll'
+        marginTop: '10px',
+        height: '195px',
+        overflowY: 'scroll'
     }
 }))
