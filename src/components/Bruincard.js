@@ -25,7 +25,7 @@ export default function Bruincard(props){
                 <p style={{marginTop: '10px', marginBottom: '5px'}} className={classes.text}>{props.user.name.toUpperCase()}</p>
                 <p className={classes.text}>{`$${props.user.money}`}</p>
            </div>
-           <div className={classes.bluebox}>
+           <div className={classes.bluebox} style={{backgroundColor: playerDetails[id].color}}>
                 <p className={classes.b1}>BRUINOPOLY</p>
                 <p className={classes.b2}>BRUINCARD</p>
            </div>

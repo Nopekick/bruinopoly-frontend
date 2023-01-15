@@ -87,7 +87,7 @@ export default function Sidebar(props){
                 })}
             </div>}
             {props.started && <div className={classes.gameSidebar}>
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '35px'}}>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px'}}>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.buy) ? {backgroundColor: "#F15B45"} : null}
                         onClick={()=> handleOpenProperty(true)}>+<img className={classes.actionImage} alt="action buy" src={home} /></div>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.sell) ? {backgroundColor: "#F15B45"} : null}
@@ -101,7 +101,8 @@ export default function Sidebar(props){
                 <div className={classes.nameBox}>
                     {props.game && props.game.players.map((player, i) => {
                         if(player._id === props.user.id) return null;
-                        return <PlayerBanner color={playerDetails[i].color} key={i} name={player.name} money={player.money} token={playerDetails[i].img} />
+                        return <PlayerBanner color={playerDetails[i].color} turn={player._id === props.game.currentTurn} key={i}
+                            name={player.name} money={player.money} token={playerDetails[i].img} />
                     })}
                 </div> 
             </div>}
@@ -135,7 +136,7 @@ const useStyles = makeStyles(() => ({
         height: '56px'
     },
     gameSidebar: {
-        paddingTop: '30px'
+        paddingTop: '20px'
     },
     bruinopoly: {
         fontFamily: 'ChelseaMarket',

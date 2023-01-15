@@ -8,12 +8,14 @@ import WinPopup from './Board/WinPopup'
 import Chat from './Chat';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
+import { mapIdToName } from '../config';
 
 import paw from '../assets/loadingpaw.png';
 
 export default function GameScreen(props){
     const classes = useStyles();
     const token = useSelector(state => state.lobbyReducer.token)
+    const game = useSelector(state => state.lobbyReducer.game)
     const heightMatch = useMediaQuery('(max-height:800px)');
 
     let handleStart = () => {
@@ -38,8 +40,10 @@ export default function GameScreen(props){
     return(
         <div className={classes.main}>
             {props.winPopup && <WinPopup winner={props.winPopup}/>}
-            <div className={classes.topBar}><p style={{display: 'inline-block', margin: 0, padding: 0, paddingLeft: '30px', fontSize: 23, 
-                color: 'purple', cursor: 'pointer', paddingTop: '12px'}} onClick={handleLeave}>Leave Lobby (Testing)</p></div>
+            <div className={classes.topBar}>
+                <p className={classes.testingLeave} onClick={handleLeave}>Leave Lobby (Testing)</p>
+                {props.game.hasStarted && props.game.currentTurn && <p className={classes.currentTurn}>Current Turn: {mapIdToName(props.game.players, props.game.currentTurn)}</p>}
+            </div>
             <Sidebar user={props.user} started={props.game.hasStarted} game={props.game} players={props.players}/>
             {!props.game.hasStarted && <div className={classes.loadingContainer}>
                 <img alt="paw" className={classes.paw} src={paw}/>
@@ -72,6 +76,27 @@ const useStyles = makeStyles(() => ({
         width: '100vw',
         boxSizing: 'border-box',
         overflow: 'hidden'
+    },
+    testingLeave: {
+        display: 'inline-block', 
+        margin: 0,
+        padding: 0, 
+        paddingLeft: '30px', 
+        fontSize: 23, 
+        color: 'purple', 
+        cursor: 'pointer', 
+        paddingTop: '12px'
+    },
+    currentTurn: {
+        display: 'inline-block', 
+        margin: 0,
+        padding: 0, 
+        paddingRight: '120px', 
+        float: 'right',
+        paddingTop: '12px',
+        fontFamily: 'ChelseaMarket',
+        fontSize: '25px',
+        color: '#433F36',
     },
     board: {
         position: 'absolute',

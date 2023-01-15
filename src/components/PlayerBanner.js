@@ -1,7 +1,5 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import {playerDetails} from '../config'
-
 
 export default function PlayerBanner(props){
     const classes = useStyles();

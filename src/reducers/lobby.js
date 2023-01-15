@@ -16,6 +16,7 @@ const CREATE_ROOM_ERROR = "CREATE_ROOMS_ERROR"
 const REQUEST_START = "REQUEST_START"
 const START_GAME = "START_GAME"
 const START_TURN = "START_TURN"
+const SET_TURN = "SET_TURN"
 const END_TURN = "END_TURN"
 const SET_HOST_SELF = "SET_HOST_SELF"
 const SET_HOST = "SET_HOST"
@@ -195,6 +196,8 @@ export function lobbyReducer(state = initialState, action) {
             return {...state, game: action.game}
         case START_TURN:
             return {...state, yourTurn: true}
+        case SET_TURN:
+            return {...state, game: {...state.game, currentTurn: action.id}}
         case END_TURN:
             if(state.socket !== null)
                 state.socket.send(JSON.stringify(['game-events', [{type: 'END_TURN'}]]))
@@ -663,6 +666,9 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                 break;
             case 'your-turn':
                 dispatch({type: START_TURN})
+                break;
+            case 'player-turn':
+                dispatch({type: SET_TURN, id: data[1].id})
                 break;
             case 'offered-trade':
                 dispatch({type: RECEIVE_TRADE, obj: {...data[1]} })
