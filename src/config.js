@@ -1,6 +1,7 @@
 import Property from './components/Board/Property.js';
 import Corner from './components/Board/Corner.js';
 import Jail from './components/Board/Jail.js';
+
 import Exuse_Me_Blue from './assets/Exuse_Me_Blue.png';
 import Dining from './assets/Dining1.png';
 import Powell from './assets/POWELL.png';
@@ -30,10 +31,6 @@ let sleep = (sec) => {
     })
 }
 
-// let API_URL = "http://localhost:3000"
-// let SOCKET_URL = "localhost:8080"
-//let API_URL = "https://bruinopoly-backend.herokuapp.com"
-//let SOCKET_URL = "bruinopoly-backend.herokuapp.com"
 let API_URL = process.env.REACT_APP_API_URL;
 let SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
@@ -200,7 +197,7 @@ let positions = [
     <Property id={8} key={9} color='#A8DDD7' name='Engr. IV' price='$100' />,
     <Property id={9} key={10} color='#A8DDD7' name='Boelter' price='$120' />,
     //corner
-    <Jail id={10} key={11} icon={Jail_pic} ></Jail>,
+    <Jail id={10} key={11} icon={Jail_pic} />,
     <Property id={11} key={12} color='#EAACA3' name='Rolfe Hall' price='$140' />,
     <Property id={12} key={13} padding={true} name='Royce' icon={Royce} price='$150' />,
     <Property id={13} key={14} color='#EAACA3' name='Schoenberg Music Hall' price='$140' />,
@@ -211,7 +208,7 @@ let positions = [
     <Property id={18} key={19} color='#F6B611' name='LS' price='$180' />,
     <Property id={19} key={20} color='#F6B611' name='Young Hall' price='$200' />,
     //corner
-    <Corner id={20} key={21} icon={NoFreeParking}></Corner>,
+    <Corner id={20} key={21} icon={NoFreeParking} />,
     <Property id={21} key={22} color='#F15B45' name='ACKERMAN' price='$220' />,
     <Property id={22} key={23} name='EXUSE ME SIR!' icon={Exuse_Me_Blue} />,
     <Property id={23} key={24} color='#F15B45' name='WOODEN' price='$220' />,
@@ -222,7 +219,7 @@ let positions = [
     <Property id={28} key={29} padding={true}  name='POWELL' price='$150' icon={Powell} />,
     <Property id={29} key={30} color='#FFF261' name='FRANZ' price='$280' />,
     //corner
-    <Corner id={30} key={31} icon={GoToJail}></Corner>,
+    <Corner id={30} key={31} icon={GoToJail} />,
     <Property id={31} key={32} color='#A8DC96' name='SCI & ENGR. LIBRARY' price='$300' />,
     <Property id={32} key={33} color='#A8DC96' name='BIOMED LIBRARY' price='$300' />,
     <Property id={33} key={34} name='Financial Aid Office' icon={FinAid} />,

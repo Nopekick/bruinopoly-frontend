@@ -16,7 +16,7 @@ export default function Lobby(props){
     const [display, setDisplay] = useState(false);
     const [name, setName] = useState("");
     const [startMinute, setStartMinute] = useState(0);
-    const [startHour, setStartHour] = useState(12);
+    const [startHour, setStartHour] = useState(1);
     const [startDescriptor, setStartDescriptor] = useState("AM");
 
     const [length, setLength] = useState(minGameTime);
