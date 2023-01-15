@@ -24,8 +24,7 @@ export default function Sidebar(props){
 
     useEffect(()=>{
         let diffSec = differenceInSeconds(new Date(props.game.startDate), new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"})))
-        console.log("start time:", props.game.startDate)
-
+        
         let interval = setInterval(()=>{
             if(diffSec <= 0) {
                 setTimeLeft("00:00")

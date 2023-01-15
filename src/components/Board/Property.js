@@ -14,9 +14,9 @@ export default function Property(props){
     const [ownerIndex, setOwner] = useState(0)
     const cssProps = {color: props.color}
     const classes = useStyles(cssProps);
-    const [here, setHere] = useState(0)
     const [playerMap, setPlayerMap] = useState({})
 
+    //TODO: move this out of Property.js, redundant work
     useEffect(()=>{
         let obj = {}
         for(let i = 0; i < players.length; i++){
@@ -25,6 +25,7 @@ export default function Property(props){
         setPlayerMap(obj)
     }, [])
 
+    //Track owner changes of this property
     useEffect(()=>{
         if(properties[props.id].ownerId === null) setOwner(null)
         
@@ -33,17 +34,6 @@ export default function Property(props){
                 setOwner(i)
         })
     }, [properties[props.id].ownerId])
-
-    useEffect(()=>{
-        let count = 0
-        
-        players.forEach((p)=>{
-            if(p.currentTile === props.id)
-                count++;
-        })
-        setHere(count);
-
-    }, [players])
 
     return(
         <div className={classes.main}>

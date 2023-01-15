@@ -1,5 +1,6 @@
 import Property from './components/Board/Property.js';
 import Corner from './components/Board/Corner.js';
+import Jail from './components/Board/Jail.js';
 import Exuse_Me_Blue from './assets/Exuse_Me_Blue.png';
 import Dining from './assets/Dining1.png';
 import Powell from './assets/POWELL.png';
@@ -10,7 +11,7 @@ import USAC from './assets/USAC.png';
 import Exuse_Me_Red from './assets/Exuse_Me_Red.png';
 import Royce from './assets/Royce.png';
 import Go from './assets/GO.png';
-import Jail from './assets/JAIL.png';
+import Jail_pic from './assets/JAIL.png';
 import GoToJail from './assets/GO_TO_JAIL.png';
 import NoFreeParking from './assets/FREE_PARKING.png';
 
@@ -199,7 +200,7 @@ let positions = [
     <Property id={8} key={9} color='#A8DDD7' name='Engr. IV' price='$100' />,
     <Property id={9} key={10} color='#A8DDD7' name='Boelter' price='$120' />,
     //corner
-    <Corner id={10} key={11} icon={Jail} jail={true}></Corner>,
+    <Jail id={10} key={11} icon={Jail_pic} ></Jail>,
     <Property id={11} key={12} color='#EAACA3' name='Rolfe Hall' price='$140' />,
     <Property id={12} key={13} padding={true} name='Royce' icon={Royce} price='$150' />,
     <Property id={13} key={14} color='#EAACA3' name='Schoenberg Music Hall' price='$140' />,
@@ -244,6 +245,17 @@ let playerDetails = [
     {color: "orange", img: cat}
 ]
 
+let cornerPos = [                              
+    {top: '3px', left: '3px'},     //top left   
+    {top: '3px', left: '53px'},    //top right  
+    {top: '53px', left: '3px'},    //bottom left  
+    {top: '53px', left: '53px'},   //bottom right 
+    {top: '6px', left: '30px'},   //top mid     
+    {top: '25px', left: '10px'},   //left mid     
+    {top: '30px', left: '48px'},   //right mid   
+    {top: '50px', left: '25px'}    //bottom mid 
+]
+
 let getColor = (tile) => {
     if(tile === 12 || tile === 28){
         return "#C4B299"
@@ -269,9 +281,8 @@ let getColor = (tile) => {
 }
 
 let mapIdToName = (players, id) => {
-    let other = players.filter(p => p._id === id)[0]
-    console.log(other.name)
-    return other.name
+    let p = players.filter(p => p._id === id)[0]
+    return p.name
 }
 
-export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName}
+export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos}
