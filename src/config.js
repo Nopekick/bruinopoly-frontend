@@ -245,7 +245,7 @@ let playerDetails = [
     {color: "orange", img: cat}
 ]
 
-let cornerPos = [                              
+const cornerPos = [                              
     {top: '3px', left: '3px'},     //top left   
     {top: '3px', left: '53px'},    //top right  
     {top: '53px', left: '3px'},    //bottom left  
@@ -256,7 +256,7 @@ let cornerPos = [
     {top: '50px', left: '25px'}    //bottom mid 
 ]
 
-let propertyPos = [                              
+const propertyPos = [                              
     {top: '10px', left: '10px'},      
     {top: '53px', left: '10px'},     
     {top: '30px', left: '2px'},   
@@ -266,6 +266,28 @@ let propertyPos = [
     {top: '55px', left: '2px'},   
     {top: '3px', left: '16px'} 
 ]
+
+const jailPosJail = [
+    {top: '-2px', left: '16px'},      
+    {top: '37px', left: '57px'},     
+    {top: '-2px', left: '57px'},   
+    {top: '37px', left: '16px'},   
+    {top: '20px', left: '16px'},      
+    {top: '20px', left: '57px'},     
+    {top: '-2px', left: '30px'},   
+    {top: '37px', left: '30px'},   
+] 
+
+const jailPosNoJail = [
+    {top: '3px', left: '-14px'},      
+    {top: '47px', left: '-16px'},     
+    {top: '67px', left: '22px'},   
+    {top: '67px', left: '60px'},   
+    {top: '20px', left: '-14px'},   
+    {top: '75px', left: '-14px'},    
+    {top: '70px', left: '0px'},   
+    {top: '69px', left: '37px'} 
+] 
 
 let getColor = (tile) => {
     if(tile === 12 || tile === 28){
@@ -296,4 +318,6 @@ let mapIdToName = (players, id) => {
     return p.name
 }
 
-export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos, propertyPos}
+export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, 
+    PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos, 
+    propertyPos, jailPosJail, jailPosNoJail}

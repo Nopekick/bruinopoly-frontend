@@ -5,9 +5,8 @@ import {playerDetails, cornerPos} from '../../config'
 
 export default function Corner(props){
     const players = useSelector(state => state.lobbyReducer.game.players)
-    const classes = useStyles();
-
     const [playerMap, setPlayerMap] = useState({})
+    const classes = useStyles();
 
     //TODO: move this out of Corner.js, redundant work
     useEffect(()=>{
