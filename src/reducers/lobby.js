@@ -64,6 +64,8 @@ const GAME_OVER = "GAME_OVER"
 //FOR TESTING
 const BUY_ALL_PROPERTIES = "BUY_ALL_PROPERTIES"
 const TEST_ADD_PLAYER = "TEST_ADD_PLAYER"
+const TEST_ADD_PLAYERS = "TEST_ADD_PLAYERS"
+const TEST_MOVE_ALL_TO = "TEST_MOVE_ALL_TO"
 
 
 const initialState = {
@@ -95,6 +97,10 @@ export function lobbyReducer(state = initialState, action) {
     switch (action.type) {
         case TEST_ADD_PLAYER: 
             return {...state, game: {...state.game, players: [...state.game.players, action.player]}}
+        case TEST_ADD_PLAYER: 
+            return {...state, game: {...state.game, players: [...state.game.players, ...action.players]}}
+        case TEST_MOVE_ALL_TO:
+            return {...state, game: {...state.game, players: state.game.players.map((p) => {return {...p, currentTile: action.tileNum}})}}
         case BUY_ALL_PROPERTIES:
             if(state.yourTurn === false) return
             let arr = [6,8,9]

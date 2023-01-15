@@ -256,6 +256,17 @@ let cornerPos = [
     {top: '50px', left: '25px'}    //bottom mid 
 ]
 
+let propertyPos = [                              
+    {top: '10px', left: '10px'},      
+    {top: '53px', left: '10px'},     
+    {top: '30px', left: '2px'},   
+    {top: '30px', left: '15px'},   
+    {top: '1px', left: '1px'},   
+    {top: '55px', left: '16px'},    
+    {top: '55px', left: '2px'},   
+    {top: '3px', left: '16px'} 
+]
+
 let getColor = (tile) => {
     if(tile === 12 || tile === 28){
         return "#C4B299"
@@ -285,4 +296,4 @@ let mapIdToName = (players, id) => {
     return p.name
 }
 
-export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos}
+export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos, propertyPos}

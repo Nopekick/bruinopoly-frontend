@@ -22,7 +22,8 @@ export default function Corner(props){
         <div className={classes.main}>
             <img alt="corner type" src={props.icon} className={classes.icon}/>
             {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id).map((player, i)=>{
-                return <div key={i} style={{backgroundColor: playerDetails[playerMap[player._id]].color, top: cornerPos[i].top, left: cornerPos[i].left}} className={classes.outerToken}>
+                return <div key={i} style={{backgroundColor: playerDetails[playerMap[player._id]].color, top: cornerPos[i].top, left: cornerPos[i].left}} 
+                className={classes.outerToken}>
                     <img alt="token" className={classes.token} src={playerDetails[playerMap[player._id]].img} />
                 </div>
             })}

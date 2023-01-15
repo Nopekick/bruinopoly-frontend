@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useSelector } from 'react-redux'
-import {playerDetails} from '../../config'
+import {playerDetails, propertyPos} from '../../config'
 
 import dorm from '../../assets/dorm.png'
 import apt from '../../assets/apt.png'
@@ -69,7 +69,8 @@ export default function Property(props){
             {props.icon !== null && <img src={props.icon} style={{width: props.small ? '35px' : '90%', marginBottom: props.padding ? '20px': null}} className={classes.icon}/>}
             {props.price !== null && <div className={classes.price}>{props.price}</div>}
             {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id).map((player, i)=>{
-                return <div key={i} style={{backgroundColor: playerDetails[playerMap[player._id]].color, top: i===0 ? "20px" : `${20+10*i}`}} className={classes.outerToken}>
+                return <div key={i} style={{backgroundColor: playerDetails[playerMap[player._id]].color, top: propertyPos[i].top, left: propertyPos[i].left}} 
+                className={classes.outerToken}>
                     <img className={classes.token} src={playerDetails[playerMap[player._id]].img} />
                  </div>
             })}
