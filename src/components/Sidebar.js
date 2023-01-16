@@ -14,6 +14,7 @@ export default function Sidebar(props){
     const mortgagePopup = useSelector(state => state.lobbyReducer.mortgagePopup)
     const propertyPopup = useSelector(state => state.lobbyReducer.propertyPopup)
     const tradePopup = useSelector(state => state.lobbyReducer.tradePopup)
+    const jailCards = useSelector(state => state.lobbyReducer.jailCards)
 
     const classes = useStyles();
     const turn = useSelector(state => state.lobbyReducer.yourTurn)
@@ -97,7 +98,7 @@ export default function Sidebar(props){
                     <div className={classes.actionButton} style={(mortgagePopup) ? {backgroundColor: "#F15B45"} : null}
                         onClick={handleOpenMortgage}><img className={classes.actionImage} alt="action mortgage" src={mortgage} /></div>
                 </div>
-                <Bruincard user={props.game.players.find((player)=> player._id === props.user.id)} info={[props.user.id, props.game.players]} />
+                <Bruincard user={props.game.players.find((player)=> player._id === props.user.id)} info={[props.user.id, props.game.players]} jailCards={jailCards} />
                 <div className={classes.nameBox}>
                     {props.game && props.game.players.map((player, i) => {
                         if(player._id === props.user.id) return null;

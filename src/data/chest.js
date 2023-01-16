@@ -100,7 +100,7 @@ const CHEST = [
     },
     {
       id: 6,
-      text: 'It\'s Bruinbash night! Collect $5 from each player for seats.', 
+      text: 'It\'s Bruinbash night! Collect $20 from each player for seats.', 
       getEvents: (player, room) => {
         let res = []
         for (const p of room.players) {
@@ -110,7 +110,7 @@ const CHEST = [
                 type: 'TRANSFER_MONEY',
                 playerId: player._id,
                 recipientId: p._id,
-                moneyChange: 5
+                moneyChange: 20
               }
             )
           }

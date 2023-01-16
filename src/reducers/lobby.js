@@ -27,7 +27,7 @@ const SET_SOCKET = "SET_SOCKET"
 const MOVE_ONE = "MOVE_ONE"
 const MOVEMENT = "MOVEMENT"
 const GO_TO_JAIL = "GO_TO_JAIL"
-const LEAVE_JAIL = "LEAVE_JAIL"
+const USE_GET_OUT_OF_JAIL = "USE_GET_OUT_OF_JAIL"
 const PROPERTY_DECISION = "PROPERTY_DECISION"
 const CLOSE_PROPERTY = "CLOSE_PROPERTY"
 const ATTEMPT_BUY = "ATTEMPT_BUY"
@@ -68,6 +68,7 @@ const TEST_ADD_PLAYER = "TEST_ADD_PLAYER"
 const TEST_ADD_PLAYERS = "TEST_ADD_PLAYERS"
 const TEST_MOVE_ALL_TO = "TEST_MOVE_ALL_TO"
 const TEST_ALL_TO_JAIL = "TEST_ALL_TO_JAIL"
+const TEST_ADD_JAIL_CARDS = "TEST_ADD_JAIL_CARDS"
 
 
 const initialState = {
@@ -93,6 +94,7 @@ const initialState = {
     mortgagePopup: null,
     winPopup: null,
     doubles: null,
+    jailCards: 0
 }
 
 export function lobbyReducer(state = initialState, action) {
@@ -105,6 +107,8 @@ export function lobbyReducer(state = initialState, action) {
             return {...state, game: {...state.game, players: state.game.players.map((p) => {return {...p, currentTile: action.tileNum}})}}
         case TEST_ALL_TO_JAIL:
             return {...state, game: {...state.game, players: state.game.players.map((p) => {return {...p, turnsInJail: 1}})}}
+        case TEST_ADD_JAIL_CARDS:
+            return {...state, jailCards: 2}
         case BUY_ALL_PROPERTIES:
             if(state.yourTurn === false) return
             let arr = [6,8,9]
@@ -228,16 +232,25 @@ export function lobbyReducer(state = initialState, action) {
                     if(player._id !== state.userInfo.id) return player
                     return {...player, turnsInJail: 0}
                 })}}
-            } else if(p2.turnsInJail !== 0  && action.doubles === false){
+            } else if(p2.turnsInJail !== 0 && action.doubles === false){
+                //TODO: send decrement turnsInJail event to server
                 return {...state, game: {...state.game, players: state.game.players.map((p)=>{
                     if(p._id !== state.userInfo.id) return p
                     return {...p, turnsInJail: p.turnsInJail - 1}
                 })}}
             } else if(action.doubles === false){
+                //Not in jail, do nothing??
                 return {...state, doubles: null}
             }
 
             return {...state}
+        case USE_GET_OUT_OF_JAIL:
+            //TODO: send get out of jail event 
+            return {...state, jailCards: Math.max(0, state.jailCards - 1), 
+                game: {...state.game, players: state.game.players.map((p) => {
+                    if(p._id !== state.userInfo.id) return p
+                    return {...p, turnsInJail: 0}
+                })}}
         case GO_TO_JAIL:
             if(state.socket !== null && action.tellServer === true){
                 state.socket.send(JSON.stringify(['game-events', [{type: 'GO_TO_JAIL', playerId: action.id}] ]))
@@ -256,6 +269,7 @@ export function lobbyReducer(state = initialState, action) {
                 state.socket.send(JSON.stringify(['game-events', [{type: 'OFFER_TRADE', ...action.obj}]]))
             return {...state}
         case ACCEPT_TRADE:
+            //Logic for handling trade when this player accepts trade
             let tempTradeObj = {...state.tradePopup}
             delete tempTradeObj.type
             if(state.socket !== null)
@@ -301,7 +315,8 @@ export function lobbyReducer(state = initialState, action) {
             })}}
             
         case HANDLE_ACCEPT_TRADE:
-           // console.log("HANDLE_ACCEPT_TRADE:", action.obj)
+            //Logic for handling game state when other player accepts trade 
+            // console.log("HANDLE_ACCEPT_TRADE:", action.obj)
                 /* {
                 playerId: ...
                 receivingPlayerId: ...
@@ -454,7 +469,7 @@ export function lobbyReducer(state = initialState, action) {
             if(p4.turnsInJail !== 0) return {...state}
 
             if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "COMMUNITY_CHEST", playerId: state.userInfo.id, cardIndex: state.game.chanceDeck.currentCardIndex}] ]))
+                state.socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHANCE", playerId: state.userInfo.id, cardIndex: state.game.chanceDeck.currentCardIndex}] ]))
 
             return {...state, chancePopup: state.game.chanceDeck.currentCardIndex, 
                 game: {...state.game, chanceDeck: {...state.game.chanceDeck, currentCardIndex: (state.game.chanceDeck.currentCardIndex + 1)%14}}}
@@ -473,6 +488,7 @@ export function lobbyReducer(state = initialState, action) {
             else 
                 return {...state, chancePopup: null, chestPopup: null, doubles: {...state.doubles, show: false}}
         case DOUBLES:
+            //Logic when player rolls double: go to jail on 3rd consecutive doubles roll
             if(state.doubles === null){
                 return {...state, yourTurn: true, doubles: {show: true, number: 1}}
             } else if(state.doubles.number === 2){

@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import roycehall from '../assets/Royce.png';
 import blob1 from '../assets/blob2.png'
+import murphy from '../assets/murphy.png'
 import {playerDetails} from '../config'
 
 export default function Bruincard(props){
@@ -18,12 +19,15 @@ export default function Bruincard(props){
 
     return (
         <div className={classes.container}>
+           {props.user.turnsInJail !== 0 && <span className={classes.jailText}>Turns in Jail: {props.user.turnsInJail}</span>}
            <img alt="royce hall" className={classes.royce} src={roycehall} />
            <img alt="token character" className={classes.bman} src={playerDetails[id].img} />
            <img alt="colored blob" className={classes.blob} src={blob1} />
            <div className={classes.box}>
                 <p style={{marginTop: '10px', marginBottom: '5px'}} className={classes.text}>{props.user.name.toUpperCase()}</p>
                 <p className={classes.text}>{`$${props.user.money}`}</p>
+                {props.jailCards >= 1 && <JailCard top="5px" />}
+                {props.jailCards > 1 && <JailCard top="40px" />}
            </div>
            <div className={classes.bluebox} style={{backgroundColor: playerDetails[id].color}}>
                 <p className={classes.b1}>BRUINOPOLY</p>
@@ -31,6 +35,13 @@ export default function Bruincard(props){
            </div>
         </div>
     )
+}
+
+const JailCard = (props) => {
+    return <div style={{height: '30px', width: '62px', borderRadius: '5px', backgroundColor: '#F5D34D', position: 'absolute', 
+        right: '168px', top: props.top, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <img style={{width: '21px'}} src={murphy} />
+    </div>
 }
 
 const useStyles = makeStyles(() => ({
@@ -41,6 +52,15 @@ const useStyles = makeStyles(() => ({
         borderRadius: '15px',
         boxShadow: '-5px 4px 31px rgba(0, 0, 0, 0.1)',
         position: 'relative'
+    },
+    jailText: {
+        fontSize: '21px',
+        fontFamily: 'VCR',
+        color: 'black',
+        margin: 0,
+        position: 'absolute',
+        top: '8px',
+        right: '17px'
     },
     royce: {
         position: 'absolute',
