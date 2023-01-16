@@ -13,6 +13,7 @@ import CardPopup from './CardPopup'
 import TradePopup from './Trade'
 import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
+import JailPopup from './JailPopup';
 
 export default function Board(props){
     const classes = useStyles();

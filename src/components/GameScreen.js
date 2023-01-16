@@ -1,14 +1,16 @@
 import React from 'react';
 import { useSelector } from 'react-redux'
-import Board from '../containers/Board';
 import {Redirect} from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles';
-import Sidebar from './Sidebar';
-import WinPopup from './Board/WinPopup'
-import Chat from './Chat';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
 import { mapIdToName } from '../config';
+
+import Board from '../containers/Board';
+import Sidebar from './Sidebar';
+import WinPopup from './Board/WinPopup'
+import JailPopup from './Board/JailPopup';
+import Chat from './Chat';
 
 import paw from '../assets/loadingpaw.png';
 
@@ -39,6 +41,7 @@ export default function GameScreen(props){
 
     return(
         <div className={classes.main}>
+            {props.jailPopup && <JailPopup />}
             {props.winPopup && <WinPopup winner={props.winPopup}/>}
             <div className={classes.topBar}>
                 <p className={classes.testingLeave} onClick={handleLeave}>Leave Lobby (Testing)</p>

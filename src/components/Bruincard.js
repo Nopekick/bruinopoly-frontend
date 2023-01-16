@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react'
+import { useDispatch } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles';
 import roycehall from '../assets/Royce.png';
 import blob1 from '../assets/blob2.png'
@@ -37,9 +38,15 @@ export default function Bruincard(props){
     )
 }
 
-const JailCard = (props) => {
-    return <div style={{height: '30px', width: '62px', borderRadius: '5px', backgroundColor: '#F5D34D', position: 'absolute', 
-        right: '168px', top: props.top, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+function JailCard(props){
+    const dispatch = useDispatch()
+
+    let handleUse = () => {
+        dispatch({type:"OPEN_JAIL_POPUP"})
+    }
+
+    return <div onClick={handleUse} style={{height: '30px', width: '62px', borderRadius: '5px', backgroundColor: '#F5D34D', 
+    position: 'absolute', right: '168px', top: props.top, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'}}>
         <img style={{width: '21px'}} src={murphy} />
     </div>
 }

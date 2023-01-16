@@ -9,7 +9,8 @@ const mapStateToProps = state => ({
     user: state.lobbyReducer.userInfo,
     game: state.lobbyReducer.game,
     host: state.lobbyReducer.isHost,
-    winPopup: state.lobbyReducer.winPopup
+    winPopup: state.lobbyReducer.winPopup,
+    jailPopup: state.lobbyReducer.jailPopup
 });
 
 const mapDispatchToProps = dispatch => ({

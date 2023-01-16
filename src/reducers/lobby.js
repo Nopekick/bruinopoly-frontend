@@ -27,11 +27,14 @@ const SET_SOCKET = "SET_SOCKET"
 const MOVE_ONE = "MOVE_ONE"
 const MOVEMENT = "MOVEMENT"
 const GO_TO_JAIL = "GO_TO_JAIL"
-const USE_GET_OUT_OF_JAIL = "USE_GET_OUT_OF_JAIL"
 const PROPERTY_DECISION = "PROPERTY_DECISION"
 const CLOSE_PROPERTY = "CLOSE_PROPERTY"
 const ATTEMPT_BUY = "ATTEMPT_BUY"
 const HANDLE_CHANGE_MONEY = "HANDLE_CHANGE_MONEY"
+
+const USE_GET_OUT_OF_JAIL = "USE_GET_OUT_OF_JAIL"
+const OPEN_JAIL_POPUP = "OPEN_JAIL_POPUP"
+const CLOSE_JAIL_POPUP = "CLOSE_JAIL_POPUP"
 
 const OPEN_TRADE = "OPEN_TRADE"
 const CANCEL_TRADE = "CANCEL_TRADE"
@@ -93,6 +96,7 @@ const initialState = {
     chestPopup: null,
     mortgagePopup: null,
     winPopup: null,
+    jailPopup: null,
     doubles: null,
     jailCards: 0
 }
@@ -163,14 +167,14 @@ export function lobbyReducer(state = initialState, action) {
                     playerId = player._id
             })
 
-            return {...state, tradePopup: null, doubles: null, gameID: action.id, game: action.room, lobbyError: null, joinRoomError: null, 
-                createRoomError: null, userInfo: {...state.userInfo, id: playerId}}
+            return {...state, jailCards: 0, tradePopup: null, doubles: null, gameID: action.id, game: action.room, lobbyError: null, joinRoomError: null, salePopup: null,
+                createRoomError: null, userInfo: {...state.userInfo, id: playerId}, jailPopup: null, propertyPopup: null, chestPopup: null, chancePopup: null, winPopup: null}
         case LEAVE_ROOM:
             if(state.socket !== null && typeof state.socket.close !== "undefined")
                 state.socket.close()
             //SHOULD TOKEN BECOME NULL UPON LEAVING ROOM? MAYBE CHANGE LATER
-            return {...state, gameID: null, yourTurn: false, isHost: false, messages: [], players: null, game: null, socket: null, doubles: null, 
-                 chancePopup: null, chestPopup: null, salePopup: null, tradePopup: null, propertyPopup: null, token: null, winPopup: null}
+            return {...state, gameID: null, yourTurn: false, isHost: false, messages: [], players: null, game: null, socket: null, doubles: null, jailPopup: null,
+                 chancePopup: null, chestPopup: null, salePopup: null, tradePopup: null, propertyPopup: null, token: null, winPopup: null, jailCards: 0}
         case UPDATE_PLAYERS:
             return {...state, players: action.players}
         case ADD_MESSAGE:
@@ -244,9 +248,16 @@ export function lobbyReducer(state = initialState, action) {
             }
 
             return {...state}
+        case OPEN_JAIL_POPUP:
+            const jailPlayer = state.game.players.filter(p => p._id === state.userInfo.id)[0]
+            if(jailPlayer.turnsInJail === 0) return {...state}
+            
+            return {...state, jailPopup: true}
+        case CLOSE_JAIL_POPUP:
+            return {...state, jailPopup: null}
         case USE_GET_OUT_OF_JAIL:
             //TODO: send get out of jail event 
-            return {...state, jailCards: Math.max(0, state.jailCards - 1), 
+            return {...state, jailCards: Math.max(0, state.jailCards - 1), jailPopup: null,
                 game: {...state.game, players: state.game.players.map((p) => {
                     if(p._id !== state.userInfo.id) return p
                     return {...p, turnsInJail: 0}

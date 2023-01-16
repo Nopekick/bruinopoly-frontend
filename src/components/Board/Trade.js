@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux'
-import {PROPERTIES, getColor, mapIdToName} from '../../config';
+import {PROPERTIES, getColor } from '../../config';
 
 import arrow from '../../assets/price_change.png'
 
