@@ -26,13 +26,15 @@ const SET_SOCKET = "SET_SOCKET"
 
 const MOVE_ONE = "MOVE_ONE"
 const MOVEMENT = "MOVEMENT"
-const GO_TO_JAIL = "GO_TO_JAIL"
 const PROPERTY_DECISION = "PROPERTY_DECISION"
 const CLOSE_PROPERTY = "CLOSE_PROPERTY"
 const ATTEMPT_BUY = "ATTEMPT_BUY"
 const HANDLE_CHANGE_MONEY = "HANDLE_CHANGE_MONEY"
 
+const GO_TO_JAIL = "GO_TO_JAIL"
 const USE_GET_OUT_OF_JAIL = "USE_GET_OUT_OF_JAIL"
+const GET_OUT_OF_JAIL_FREE = "GET_OUT_OF_JAIL_FREE"
+const JAIL_TURN = "JAIL_TURN"
 const OPEN_JAIL_POPUP = "OPEN_JAIL_POPUP"
 const CLOSE_JAIL_POPUP = "CLOSE_JAIL_POPUP"
 
@@ -222,22 +224,47 @@ export function lobbyReducer(state = initialState, action) {
                 })}}
 
             return {...state}
+        case DOUBLES:
+            //Logic when player rolls double: go to jail on 3rd consecutive doubles roll
+            if(state.doubles === null){
+                return {...state, yourTurn: true, doubles: {show: true, number: 1}}
+            } else if(state.doubles.number === 2){
+                if(state.socket !== null){
+                    state.socket.send(JSON.stringify(['game-events', [{type: 'GO_TO_JAIL', playerId: state.userInfo.id}, {type: 'END_TURN'}] ]))
+                }
+                
+                return {...state, yourTurn: false, doubles: {show: true, number: 3}, game: {...state.game, players: state.game.players.map((player)=>{
+                    if(player._id !== state.userInfo.id) return player
+                    else return {...player, currentTile: 10, turnsInJail: 3}
+                })}} 
+            } else {
+                return {...state, yourTurn: true, doubles: {show: true, number: 2}}
+            }   
         case MOVEMENT:
             let p2 = state.game.players.filter(p => p._id === state.userInfo.id)[0]
 
-            //only send movement if not in jail, or in jail with doubles
-            if(state.socket !== null && (p2.turnsInJail === 0 || (p2.turnsInJail !== 0 && action.doubles === true))){
+            //only send movement if not in jail without triple doubles, or in jail with doubles
+            if(state.socket !== null && 
+                ((p2.turnsInJail === 0 && !(state.doubles && state.doubles.number === 2 && action.doubles === true))
+                 || (p2.turnsInJail !== 0 && action.doubles === true))){
                 state.socket.send(JSON.stringify(['game-events', [{type: 'MOVEMENT', playerId: state.userInfo.id, numTiles: action.movement}] ]))
             }
 
             //if player is in jail, reduce jail turn count, or free them if doubles
             if(p2.turnsInJail !== 0 && action.doubles === true){
+                if(state.socket !== null){
+                    state.socket.send(JSON.stringify(['game-events', [{type: 'GET_OUT_OF_JAIL_FREE', playerId: state.userInfo.id}] ]))
+                }
+
                 return {...state, game: {...state.game, players: state.game.players.map((player)=>{
                     if(player._id !== state.userInfo.id) return player
                     return {...player, turnsInJail: 0}
                 })}}
             } else if(p2.turnsInJail !== 0 && action.doubles === false){
-                //TODO: send decrement turnsInJail event to server
+                if(state.socket !== null){
+                    state.socket.send(JSON.stringify(['game-events', [{type: 'JAIL_TURN', playerId: state.userInfo.id}] ]))
+                }
+        
                 return {...state, game: {...state.game, players: state.game.players.map((p)=>{
                     if(p._id !== state.userInfo.id) return p
                     return {...p, turnsInJail: p.turnsInJail - 1}
@@ -256,11 +283,24 @@ export function lobbyReducer(state = initialState, action) {
         case CLOSE_JAIL_POPUP:
             return {...state, jailPopup: null}
         case USE_GET_OUT_OF_JAIL:
-            //TODO: send get out of jail event 
+            if(state.socket !== null){
+                state.socket.send(JSON.stringify(['game-events', [{type: 'GET_OUT_OF_JAIL_FREE', playerId: state.userInfo.id}] ]))
+            }
+        
             return {...state, jailCards: Math.max(0, state.jailCards - 1), jailPopup: null,
                 game: {...state.game, players: state.game.players.map((p) => {
                     if(p._id !== state.userInfo.id) return p
                     return {...p, turnsInJail: 0}
+                })}}
+        case GET_OUT_OF_JAIL_FREE:
+            return {...state, game: {...state.game, players: state.game.players.map((p) => {
+                    if(p._id !== action.id) return p
+                    return {...p, turnsInJail: 0}
+                })}}
+        case JAIL_TURN:
+            return {...state, game: {...state.game, players: state.game.players.map((p) => {
+                    if(p._id !== action.id) return p
+                    return {...p, turnsInJail: Math.max(0, p.turnsInJail-1)}
                 })}}
         case GO_TO_JAIL:
             if(state.socket !== null && action.tellServer === true){
@@ -498,22 +538,6 @@ export function lobbyReducer(state = initialState, action) {
                 return {...state, chancePopup: null, chestPopup: null}
             else 
                 return {...state, chancePopup: null, chestPopup: null, doubles: {...state.doubles, show: false}}
-        case DOUBLES:
-            //Logic when player rolls double: go to jail on 3rd consecutive doubles roll
-            if(state.doubles === null){
-                return {...state, yourTurn: true, doubles: {show: true, number: 1}}
-            } else if(state.doubles.number === 2){
-                if(state.socket !== null && action.tellServer === true){
-                    state.socket.send(JSON.stringify(['game-events', [{type: 'GO_TO_JAIL', playerId: action.id}] ]))
-                }
-            
-                return {...state, yourTurn: false, doubles: {show: true, number: 3}, game: {...state.game, players: state.game.players.map((player)=>{
-                    if(player._id !== state.userInfo.id) return player
-                    else return {...player, currentTile: 10, turnsInJail: 3}
-                })}} 
-            } else {
-                return {...state, yourTurn: true, doubles: {show: true, number: 2}}
-            }
         case HIDE_DICE:
             return {...state, yourTurn: false}
         case ADD_PROPERTY:
@@ -713,6 +737,15 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                     case "CHANGE_MONEY":
                         dispatch({type: HANDLE_CHANGE_MONEY, playerId: event.playerId, money: event.moneyChange})
                         break;
+                    case "GO_TO_JAIL":
+                        dispatch({type: GO_TO_JAIL, id: event.playerId, tellServer: false})
+                        break;
+                    case "GET_OUT_OF_JAIL_FREE":
+                        dispatch({type: GET_OUT_OF_JAIL_FREE, id: event.playerId})
+                        break;
+                    case "JAIL_TURN":
+                        dispatch({type: JAIL_TURN, id: event.playerId})
+                        break;
                     case "MOVEMENT":
                         dispatch(handleMovement({movement: event.numTiles, id: event.playerId, doubles: false, onlyMove: true}))
                         break;
@@ -785,9 +818,21 @@ export const leaveLobby = () => async (dispatch) => {
     dispatch({type: LEAVE_ROOM})
 };
 
-export const handleMovement = ({movement, id, doubles, onlyMove}) => async (dispatch) => {
+export const handleMovement = ({movement, id, doubles, onlyMove}) => async (dispatch, getState) => {
+    const player = getState().lobbyReducer.game.players.find(p => p._id === id)
+    const doubleState = getState().lobbyReducer.doubles
+
     if(onlyMove === false)
         dispatch({type: MOVEMENT, movement, doubles})
+
+   
+    //If player is in jail and did not roll doubles, skip tile movement
+    //Or if player is not in jail, but just rolled 3 consecutive doubles, also skip tile movement
+    if((player.turnsInJail !== 0 && doubles === false) ||
+        (player.turnsInJail === 0 && doubles === true && doubleState && doubleState.number === 2)) {
+        await sleep(1)
+        return;
+    } 
 
     for(let i = 0; i < movement; i++){
         dispatch({type: MOVE_ONE, id, doubles})
@@ -795,13 +840,19 @@ export const handleMovement = ({movement, id, doubles, onlyMove}) => async (disp
     }
 }
 
-export const turnLogic = ({movement, id, destination, doubles}) => async (dispatch) => {
-    //dispatch({type: HIDE_DICE})
+export const turnLogic = ({movement, id, destination, doubles}) => async (dispatch, getState) => {
+    const player = getState().lobbyReducer.game.players.find(p => p._id === id)
+    const doubleState = getState().lobbyReducer.doubles
+
     await dispatch(handleMovement({movement, id, doubles, onlyMove: false}))
 
-
     //NEEDS CHANGES: ADD END TURN TO END OF PROPERTY_DECISION, CARD DRAWING, FEE PAYING
-    if(TILES[destination].type === TileType.PROPERTY){
+    if((player.turnsInJail !== 0 && doubles == false) ||
+        (player.turnsInJail === 0 && doubleState && doubleState.number === 2 && doubles === true)) {
+        //do nothing if in jail and didn't roll doubles
+        //also do nothing if not in jail, rolled 3 consecutive doulbes
+    }
+    else if(TILES[destination].type === TileType.PROPERTY){
         dispatch({type: PROPERTY_DECISION, id: destination, movement})
     } else if(TILES[destination].type === TileType.CHANCE){
         dispatch({type: DRAW_CHANCE})
