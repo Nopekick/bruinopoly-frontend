@@ -1,5 +1,7 @@
 import Property from './components/Board/Property.js';
 import Corner from './components/Board/Corner.js';
+import Jail from './components/Board/Jail.js';
+
 import Exuse_Me_Blue from './assets/Exuse_Me_Blue.png';
 import Dining from './assets/Dining1.png';
 import Powell from './assets/POWELL.png';
@@ -10,7 +12,7 @@ import USAC from './assets/USAC.png';
 import Exuse_Me_Red from './assets/Exuse_Me_Red.png';
 import Royce from './assets/Royce.png';
 import Go from './assets/GO.png';
-import Jail from './assets/JAIL.png';
+import Jail_pic from './assets/JAIL.png';
 import GoToJail from './assets/GO_TO_JAIL.png';
 import NoFreeParking from './assets/FREE_PARKING.png';
 
@@ -29,10 +31,6 @@ let sleep = (sec) => {
     })
 }
 
-// let API_URL = "http://localhost:3000"
-// let SOCKET_URL = "localhost:8080"
-//let API_URL = "https://bruinopoly-backend.herokuapp.com"
-//let SOCKET_URL = "bruinopoly-backend.herokuapp.com"
 let API_URL = process.env.REACT_APP_API_URL;
 let SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
@@ -199,7 +197,7 @@ let positions = [
     <Property id={8} key={9} color='#A8DDD7' name='Engr. IV' price='$100' />,
     <Property id={9} key={10} color='#A8DDD7' name='Boelter' price='$120' />,
     //corner
-    <Corner id={10} key={11} icon={Jail} jail={true}></Corner>,
+    <Jail id={10} key={11} icon={Jail_pic} />,
     <Property id={11} key={12} color='#EAACA3' name='Rolfe Hall' price='$140' />,
     <Property id={12} key={13} padding={true} name='Royce' icon={Royce} price='$150' />,
     <Property id={13} key={14} color='#EAACA3' name='Schoenberg Music Hall' price='$140' />,
@@ -210,7 +208,7 @@ let positions = [
     <Property id={18} key={19} color='#F6B611' name='LS' price='$180' />,
     <Property id={19} key={20} color='#F6B611' name='Young Hall' price='$200' />,
     //corner
-    <Corner id={20} key={21} icon={NoFreeParking}></Corner>,
+    <Corner id={20} key={21} icon={NoFreeParking} />,
     <Property id={21} key={22} color='#F15B45' name='ACKERMAN' price='$220' />,
     <Property id={22} key={23} name='EXUSE ME SIR!' icon={Exuse_Me_Blue} />,
     <Property id={23} key={24} color='#F15B45' name='WOODEN' price='$220' />,
@@ -221,7 +219,7 @@ let positions = [
     <Property id={28} key={29} padding={true}  name='POWELL' price='$150' icon={Powell} />,
     <Property id={29} key={30} color='#FFF261' name='FRANZ' price='$280' />,
     //corner
-    <Corner id={30} key={31} icon={GoToJail}></Corner>,
+    <Corner id={30} key={31} icon={GoToJail} />,
     <Property id={31} key={32} color='#A8DC96' name='SCI & ENGR. LIBRARY' price='$300' />,
     <Property id={32} key={33} color='#A8DC96' name='BIOMED LIBRARY' price='$300' />,
     <Property id={33} key={34} name='Financial Aid Office' icon={FinAid} />,
@@ -243,6 +241,50 @@ let playerDetails = [
     {color: "cyan", img: bman},
     {color: "orange", img: cat}
 ]
+
+const cornerPos = [                              
+    {top: '3px', left: '3px'},     //top left   
+    {top: '3px', left: '53px'},    //top right  
+    {top: '53px', left: '3px'},    //bottom left  
+    {top: '53px', left: '53px'},   //bottom right 
+    {top: '6px', left: '30px'},   //top mid     
+    {top: '25px', left: '10px'},   //left mid     
+    {top: '30px', left: '48px'},   //right mid   
+    {top: '50px', left: '25px'}    //bottom mid 
+]
+
+const propertyPos = [                              
+    {top: '10px', left: '10px'},      
+    {top: '53px', left: '10px'},     
+    {top: '30px', left: '2px'},   
+    {top: '30px', left: '15px'},   
+    {top: '1px', left: '1px'},   
+    {top: '55px', left: '16px'},    
+    {top: '55px', left: '2px'},   
+    {top: '3px', left: '16px'} 
+]
+
+const jailPosJail = [
+    {top: '-2px', left: '16px'},      
+    {top: '37px', left: '57px'},     
+    {top: '-2px', left: '57px'},   
+    {top: '37px', left: '16px'},   
+    {top: '20px', left: '16px'},      
+    {top: '20px', left: '57px'},     
+    {top: '-2px', left: '30px'},   
+    {top: '37px', left: '30px'},   
+] 
+
+const jailPosNoJail = [
+    {top: '3px', left: '-14px'},      
+    {top: '47px', left: '-16px'},     
+    {top: '67px', left: '22px'},   
+    {top: '67px', left: '60px'},   
+    {top: '20px', left: '-14px'},   
+    {top: '75px', left: '-14px'},    
+    {top: '70px', left: '0px'},   
+    {top: '69px', left: '37px'} 
+] 
 
 let getColor = (tile) => {
     if(tile === 12 || tile === 28){
@@ -269,9 +311,10 @@ let getColor = (tile) => {
 }
 
 let mapIdToName = (players, id) => {
-    let other = players.filter(p => p._id === id)[0]
-    console.log(other.name)
-    return other.name
+    let p = players.filter(p => p._id === id)[0]
+    return p.name
 }
 
-export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName}
+export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, 
+    PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos, 
+    propertyPos, jailPosJail, jailPosNoJail}

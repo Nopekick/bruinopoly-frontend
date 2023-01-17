@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useEffect, useRef} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux'
 
@@ -7,8 +7,8 @@ export default function CardPopup(props){
     const wrapperRef = useRef(null);
     useOutsideAlerter(wrapperRef);
 
-    let doubleText = props.doubles && props.doubles === 3 ? "YOU ROLLED A DOUBLE THREE TIMES IN A ROW. GO TO MURPHY" : "YOU ROLLED A DOUBLE. ROLL AGAIN"
-    console.log(props)
+    const doubleText = props.doubles && props.doubles.number === 3 ? "YOU ROLLED A DOUBLE THREE TIMES IN A ROW. GO TO MURPHY" : "YOU ROLLED A DOUBLE. ROLL AGAIN"
+   
     return(
         <div  style={{width: '100%', height: '100%'}}>
             <div className={classes.shadow}></div>

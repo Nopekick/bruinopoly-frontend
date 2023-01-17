@@ -6,7 +6,7 @@ export default function PlayerBanner(props){
 
     return (
         <div className={classes.container}>
-            <div className={classes.circle}>
+            <div className={classes.circle} style={{backgroundColor: props.color}}>
                 <img alt="token character" className={classes.bman} src={props.token} />
             </div>
             <div className={classes.triangle}></div>
@@ -18,7 +18,7 @@ export default function PlayerBanner(props){
 
 const useStyles = makeStyles(() => ({
     container: {
-        width: '417px',
+        width: '416px',
         height: '113px',
         position: 'relative'
     },
@@ -26,7 +26,6 @@ const useStyles = makeStyles(() => ({
         position: 'absolute',
         height: '108px',
         width: '108px',
-        backgroundColor: 'white',
         borderRadius: '50%',
         display: 'flex',
         alignItems: 'center',
@@ -72,7 +71,7 @@ const useStyles = makeStyles(() => ({
         border: '25px solid transparent',
         borderRight: '30px solid #F2F2F2',
         position: 'absolute',
-        right: '15px',
+        right: '14px',
         top: '14px',
         zIndex: '2'
     }

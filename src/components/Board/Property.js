@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useSelector } from 'react-redux'
-import {playerDetails} from '../../config'
+import {playerDetails, propertyPos} from '../../config'
+import PlayerToken from '../PlayerToken';
 
 import dorm from '../../assets/dorm.png'
 import apt from '../../assets/apt.png'
@@ -14,9 +15,9 @@ export default function Property(props){
     const [ownerIndex, setOwner] = useState(0)
     const cssProps = {color: props.color}
     const classes = useStyles(cssProps);
-    const [here, setHere] = useState(0)
     const [playerMap, setPlayerMap] = useState({})
 
+    //TODO: move this out of Property.js, redundant work
     useEffect(()=>{
         let obj = {}
         for(let i = 0; i < players.length; i++){
@@ -25,6 +26,7 @@ export default function Property(props){
         setPlayerMap(obj)
     }, [])
 
+    //Track owner changes of this property
     useEffect(()=>{
         if(properties[props.id].ownerId === null) setOwner(null)
         
@@ -33,17 +35,6 @@ export default function Property(props){
                 setOwner(i)
         })
     }, [properties[props.id].ownerId])
-
-    useEffect(()=>{
-        let count = 0
-        
-        players.forEach((p)=>{
-            if(p.currentTile === props.id)
-                count++;
-        })
-        setHere(count);
-
-    }, [players])
 
     return(
         <div className={classes.main}>
@@ -79,9 +70,8 @@ export default function Property(props){
             {props.icon !== null && <img src={props.icon} style={{width: props.small ? '35px' : '90%', marginBottom: props.padding ? '20px': null}} className={classes.icon}/>}
             {props.price !== null && <div className={classes.price}>{props.price}</div>}
             {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id).map((player, i)=>{
-                return <div key={i} style={{backgroundColor: playerDetails[playerMap[player._id]].color, top: i===0 ? "20px" : `${20+10*i}`}} className={classes.outerToken}>
-                    <img className={classes.token} src={playerDetails[playerMap[player._id]].img} />
-                 </div>
+                return <PlayerToken key={i} color={playerDetails[playerMap[player._id]].color} left={propertyPos[i].left} top={propertyPos[i].top} 
+                    img={playerDetails[playerMap[player._id]].img}  />
             })}
         </div>
     )
@@ -89,22 +79,6 @@ export default function Property(props){
 }
 
 const useStyles = makeStyles(() => ({
-    token: {
-        height: '35px',
-    },
-    outerToken: {
-        height: '43px',
-        width: '43px',
-        position: 'absolute',
-        left: '10px',
-        top: '20px',
-        zIndex: 5,
-        borderRadius: '50%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: '1px solid black'
-    },
     dormHolder: {
         display: 'flex',
         flexDirection: 'row',

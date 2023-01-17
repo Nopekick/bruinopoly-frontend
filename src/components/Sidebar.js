@@ -14,6 +14,7 @@ export default function Sidebar(props){
     const mortgagePopup = useSelector(state => state.lobbyReducer.mortgagePopup)
     const propertyPopup = useSelector(state => state.lobbyReducer.propertyPopup)
     const tradePopup = useSelector(state => state.lobbyReducer.tradePopup)
+    const jailCards = useSelector(state => state.lobbyReducer.jailCards)
 
     const classes = useStyles();
     const turn = useSelector(state => state.lobbyReducer.yourTurn)
@@ -24,8 +25,7 @@ export default function Sidebar(props){
 
     useEffect(()=>{
         let diffSec = differenceInSeconds(new Date(props.game.startDate), new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"})))
-        console.log("start time:", props.game.startDate)
-
+        
         let interval = setInterval(()=>{
             if(diffSec <= 0) {
                 setTimeLeft("00:00")
@@ -88,7 +88,7 @@ export default function Sidebar(props){
                 })}
             </div>}
             {props.started && <div className={classes.gameSidebar}>
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '35px'}}>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px'}}>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.buy) ? {backgroundColor: "#F15B45"} : null}
                         onClick={()=> handleOpenProperty(true)}>+<img className={classes.actionImage} alt="action buy" src={home} /></div>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.sell) ? {backgroundColor: "#F15B45"} : null}
@@ -98,13 +98,14 @@ export default function Sidebar(props){
                     <div className={classes.actionButton} style={(mortgagePopup) ? {backgroundColor: "#F15B45"} : null}
                         onClick={handleOpenMortgage}><img className={classes.actionImage} alt="action mortgage" src={mortgage} /></div>
                 </div>
-                <Bruincard user={props.game.players.find((player)=> player._id === props.user.id)} info={[props.user.id, props.game.players]} />
+                <Bruincard user={props.game.players.find((player)=> player._id === props.user.id)} info={[props.user.id, props.game.players]} jailCards={jailCards} />
                 <div className={classes.nameBox}>
                     {props.game && props.game.players.map((player, i) => {
                         if(player._id === props.user.id) return null;
-                        return <PlayerBanner key={i} name={player.name} money={player.money} token={playerDetails[i].img} />
+                        return <PlayerBanner color={playerDetails[i].color} turn={player._id === props.game.currentTurn} key={i}
+                            name={player.name} money={player.money} token={playerDetails[i].img} />
                     })}
-                </div>
+                </div> 
             </div>}
         </div>
     )
@@ -136,7 +137,7 @@ const useStyles = makeStyles(() => ({
         height: '56px'
     },
     gameSidebar: {
-        paddingTop: '30px'
+        paddingTop: '20px'
     },
     bruinopoly: {
         fontFamily: 'ChelseaMarket',
@@ -179,8 +180,8 @@ const useStyles = makeStyles(() => ({
         lineHeight: '28px'
     },
     nameBox: {
-        marginTop: '14px',
-        height: '380px',
-        overflow: 'scroll'
+        marginTop: '10px',
+        height: '195px',
+        overflowY: 'scroll'
     }
 }))
