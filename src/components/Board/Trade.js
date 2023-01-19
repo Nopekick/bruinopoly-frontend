@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux'
 import {PROPERTIES, getColor } from '../../config';
 
+import mortgage from '../../assets/mortgage_black.png'
 import arrow from '../../assets/price_change.png'
 
 export default function TradePopup(props){
@@ -16,12 +17,12 @@ export default function TradePopup(props){
     const players = useSelector(state => state.lobbyReducer.game.players)
     const player = useSelector(state => state.lobbyReducer.userInfo)
     const trade = useSelector(state => state.lobbyReducer.tradePopup)
+    const properties = useSelector(state => state.lobbyReducer.game.properties)
     const [tradeOffererName, changeTradeOffererName] = useState("")
     const classes = useStyles();
     const dispatch = useDispatch()
 
     useEffect(()=>{
-        console.log("TRADE",trade)
         const me = players.filter(p => p._id === player.id)[0]
         changeMyProperties(me.propertiesOwned)
 
@@ -59,9 +60,15 @@ export default function TradePopup(props){
         if(trade.receive === true) return;
 
         if(bool===true){
-            changePay(pay + 10)
+            const me = players.filter(p => p._id === player.id)[0]
+            //Only increase money amount if you have that much money
+            if(pay + 10 <= me.money)
+                changePay(pay + 10)
         } else {
-            changeReceive(receive + 10)
+            const otherPlayer = players.filter(p => p._id === tradeRecipient)[0]
+            //Only increase money amount if trade recipient has that much money
+            if(receive + 10 <= otherPlayer.money)
+                changeReceive(receive + 10)
         }
     }
 
@@ -100,6 +107,14 @@ export default function TradePopup(props){
         }
     }
 
+    let handleOtherProperties = (propertyNum) => {
+        if(propertiesOtherTrade.includes(propertyNum)){
+            changeOtherTradeProperties(l => l.filter(p => p !== propertyNum))
+        } else {
+            changeOtherTradeProperties(l => [...l, propertyNum])
+        }
+    }
+
     let handleOffer = () => {
         if(tradeRecipient === null) return;
 
@@ -114,14 +129,6 @@ export default function TradePopup(props){
         dispatch({type: "OFFER_TRADE", obj})
     }
 
-    let handleOtherProperties = (propertyNum) => {
-        if(propertiesOtherTrade.includes(propertyNum)){
-            changeOtherTradeProperties(l => l.filter(p => p !== propertyNum))
-        } else {
-            changeOtherTradeProperties(l => [...l, propertyNum])
-        }
-    }
-
     return(
         <div style={{width: '100%', height: '100%'}}>
             <div className={classes.shadow}></div>
@@ -132,17 +139,19 @@ export default function TradePopup(props){
                     <div className={classes.box}>
                         <div className={classes.colorBar}>{player.name}</div>
                         <div className={classes.money}>$ {pay}
-                            <img src={arrow} className={classes.arrow} style={{transform: 'rotate(180deg)',bottom: '5px', right: '15px'}} alt="lower price"
-                                onClick={()=>{handleDecrease(true)}}/>
-                            <img src={arrow} className={classes.arrow} style={{top: '5px', right: '15px'}} alt="raise price"
-                                onClick={()=>{handleIncrease(true)}}/>
+                            {!trade.receive && <img src={arrow} className={classes.arrow} style={{transform: 'rotate(180deg)',bottom: '5px', right: '14px'}} alt="lower price"
+                                onClick={()=>{handleDecrease(true)}}/>}
+                            {!trade.receive && <img src={arrow} className={classes.arrow} style={{top: '5px', right: '14px'}} alt="raise price"
+                                onClick={()=>{handleIncrease(true)}}/>}
                         </div>
+                        <div className={classes.propertiesToTrade}>
                         {!trade.receive && myProperties.map((p, i) => {
                             return <div key={i} style={{backgroundColor: propertiesITrade.includes(p) ? "#e1e6e2" : 'white'}} 
                                 onClick={()=> handleMyProperties(p)} className={classes.propertyBox}>
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
+                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
                             </div>
                         })}
                         {trade.receive && trade.propertiesIncoming.map((p,i)=>{
@@ -151,8 +160,10 @@ export default function TradePopup(props){
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
+                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
                             </div>
                         })}
+                        </div>
                     </div>
                     <div className={classes.box}>
                         {trade.receive===true ? 
@@ -165,17 +176,19 @@ export default function TradePopup(props){
                             </select>) 
                         }
                         <div className={classes.money}>$ {receive}
-                            <img src={arrow} className={classes.arrow} style={{transform: 'rotate(180deg)',bottom: '5px', right: '15px'}} alt="lower price"
-                                onClick={()=>{handleDecrease(false)}}/>
-                            <img src={arrow} className={classes.arrow} style={{top: '5px', right: '15px'}} alt="raise price"
-                                onClick={()=>{handleIncrease(false)}}/>
+                            {!trade.receive && <img src={arrow} className={classes.arrow} style={{transform: 'rotate(180deg)',bottom: '5px', right: '14px'}} alt="lower price"
+                                onClick={()=>{handleDecrease(false)}}/>}
+                            {!trade.receive && <img src={arrow} className={classes.arrow} style={{top: '5px', right: '14px'}} alt="raise price"
+                                onClick={()=>{handleIncrease(false)}}/>}
                         </div>
+                        <div className={classes.propertiesToTrade}>
                         {!trade.receive && otherProperties.map((p, i) => {
                             return <div key={i} style={{backgroundColor: propertiesOtherTrade.includes(p) ? "#e1e6e2" : 'white'}}
                                 onClick={()=> handleOtherProperties(p)} className={classes.propertyBox}>
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
+                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
                             </div>
                         })}
                         {trade.receive && trade.propertiesOutgoing.map((p,i)=>{
@@ -184,8 +197,10 @@ export default function TradePopup(props){
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
+                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
                             </div>
                         })}
+                        </div>
                     </div>
                 </div>
                 {trade.receive ? (
@@ -328,6 +343,10 @@ const useStyles = makeStyles(() => ({
         left: '5px',
         position: 'absolute',
     },
+    propertiesToTrade: {
+        overflow: 'scroll',
+        height: '250px'
+    },
     text: {
         fontSize: '13px',
         fontWeight: 400,
@@ -337,5 +356,11 @@ const useStyles = makeStyles(() => ({
         margin: 0,
         marginBottom: '6px',
         maxWidth: '175px'
+    },
+    mortgage: {
+        height: '18px',
+        position: 'absolute',
+        right: '0px',
+        top: '14px',
     }
 }))
