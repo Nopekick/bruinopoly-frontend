@@ -77,6 +77,7 @@ export default function Sidebar(props){
         <div className={classes.container}>
             <div className={classes.bruinopoly}>BRUINOPOLY</div>
             <div className={classes.name}>{props.game.name.toUpperCase()}</div>
+            {!props.started && <div className={classes.name} style={{fontSize: '25px'}}>{props.game.timeLimit} MINUTE GAME</div>}
             {!props.started && <div>
                 <div className={classes.timeLeft}>
                     <img alt="clock" src={clock} className={classes.clock}></img>

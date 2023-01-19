@@ -24,8 +24,7 @@ export default function About(props){
                 </div>
                 <div className={classes.text}>IMPORTANT (Read this)
                     <ul>
-                        <li>Only the person who creates a game can start it. Leaving your game lobby will prevent you from starting the game after rejoining. 
-                            Therefore, don't leave a game lobby after joining if you are the host.</li>
+                        <li>Don't reload the page while in a game. It will close the server connection and make the game unplayable.</li>
                         <li>Various bugs may cause the game to be unplayable. In order to reset the website, open the Javascript console (option-command-J on Macs) and 
                             type in 'localStorage.clear()', then press 'Enter'. You should be taken back to the welcome page.</li>
                     </ul> 
@@ -35,11 +34,8 @@ export default function About(props){
                         <li>Drawing cards does nothing</li>
                         <li>Notification of duplicates overlaps with drawn card</li>
                         <li>No handling of bankrupty: money can go negative</li>
-                        <li>Wealth calculation for determining winner is incorrect</li>
                         <li>No handling of players leaving a game once it has started</li>
-                        <li>Player tokens overlap on most tiles</li>
                         <li>During a game, websocket connection to server may close for someone, leaving game unplayable for all</li>
-                        <li>Time countdown until designated start time is incorrect, due to issues with time server side</li>
                     </ul> 
                 </div>
             </div>
