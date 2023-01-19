@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import {turnLogic} from '../../reducers/lobby'
+import {turnLogic, requestGameOver} from '../../reducers/lobby'
 import { makeStyles } from '@material-ui/core/styles';
 import { positions, sleep, CHEST, CHANCE } from '../../config'
 import B from '../../assets/B.png';
@@ -13,7 +13,6 @@ import CardPopup from './CardPopup'
 import TradePopup from './Trade'
 import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
-import JailPopup from './JailPopup';
 
 export default function Board(props){
     const classes = useStyles();
@@ -65,6 +64,8 @@ export default function Board(props){
 function DiceBox(){
     const players = useSelector(state => state.lobbyReducer.game.players)
     const user = useSelector(state => state.lobbyReducer.userInfo)
+    const {startDate, timeLimit} = useSelector(state => state.lobbyReducer.game)
+    const doubles = useSelector(state => state.lobbyReducer.doubles)
     const dispatch = useDispatch()
 
     const classes = diceStyles();
@@ -74,7 +75,14 @@ function DiceBox(){
 
     let handleRoll = async () => {
         if(haveRolled) return
+
+        //If game should end and player isn't in middle of turn (doubles), don't let turn happen and notify server
+        const end_time = new Date(startDate);
+        end_time.setMinutes(end_time.getMinutes() + Number(timeLimit));
+        const cur_time = new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"}));
+        if (cur_time >= end_time && !doubles) return dispatch(requestGameOver())
        
+        //Continue with roll logic
         let leftDice = Math.floor(Math.random()*6+1)
         let rightDice = Math.floor(Math.random()*6+1)
 

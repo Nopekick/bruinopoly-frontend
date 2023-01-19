@@ -209,9 +209,6 @@ export function lobbyReducer(state = initialState, action) {
         case SET_TURN:
             return {...state, game: {...state.game, currentTurn: action.id}}
         case END_TURN:
-            if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'END_TURN'}]]))
-
             return {...state, yourTurn: false}
         case MOVE_ONE:
             let p1 = state.game.players.filter(p => p._id === action.id)[0]
@@ -821,6 +818,15 @@ export const leaveLobby = () => async (dispatch) => {
     dispatch({type: LEAVE_ROOM})
 };
 
+export const requestGameOver = () => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    
+    if(socket !== null) {
+        socket.send(JSON.stringify(['game-events', [{type: 'END_TURN'}]]))
+    }
+    dispatch({type: END_TURN})
+}
+
 export const handleMovement = ({movement, id, doubles, onlyMove}) => async (dispatch, getState) => {
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)
     const doubleState = getState().lobbyReducer.doubles
@@ -844,6 +850,7 @@ export const handleMovement = ({movement, id, doubles, onlyMove}) => async (disp
 }
 
 export const turnLogic = ({movement, id, destination, doubles}) => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)
     const doubleState = getState().lobbyReducer.doubles
 
@@ -873,6 +880,9 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
         dispatch({type: DOUBLES})
     } else {
         console.log("ENDING TURN")
+        if(socket !== null) {
+            socket.send(JSON.stringify(['game-events', [{type: 'END_TURN'}]]))
+        }
         dispatch({type: END_TURN})
     }
 
