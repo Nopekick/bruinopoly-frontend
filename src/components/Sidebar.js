@@ -91,13 +91,25 @@ export default function Sidebar(props){
             {props.started && <div className={classes.gameSidebar}>
                 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px'}}>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.buy) ? {backgroundColor: "#F15B45"} : null}
-                        onClick={()=> handleOpenProperty(true)}>+<img className={classes.actionImage} alt="action buy" src={home} /></div>
+                        onClick={()=> handleOpenProperty(true)}>
+                            <span className={classes.tooltiptext}>Buy Dorms</span>
+                            +<img className={classes.actionImage} alt="action buy" src={home} />
+                    </div>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.sell) ? {backgroundColor: "#F15B45"} : null}
-                        onClick={()=> handleOpenProperty(false)}>-<img className={classes.actionImage} alt="action sell" src={home} /></div>
+                        onClick={()=> handleOpenProperty(false)}>
+                            <span className={classes.tooltiptext}>Sell Dorms</span>
+                            -<img className={classes.actionImage} alt="action sell" src={home} />
+                    </div>
                     <div className={classes.actionButton} style={tradePopup ? {backgroundColor: "#F15B45"} : null} 
-                        onClick={handleTrade}><img style={{height: '44px'}} className={classes.actionImage} alt="action trade" src={trade} /></div>
+                        onClick={handleTrade}>
+                            <span className={classes.tooltiptext}>Trade</span>
+                            <img style={{height: '44px'}} className={classes.actionImage} alt="action trade" src={trade} />
+                    </div>
                     <div className={classes.actionButton} style={(mortgagePopup) ? {backgroundColor: "#F15B45"} : null}
-                        onClick={handleOpenMortgage}><img className={classes.actionImage} alt="action mortgage" src={mortgage} /></div>
+                        onClick={handleOpenMortgage}>
+                            <span className={classes.tooltiptext}>Mortgage Properties</span>
+                            <img className={classes.actionImage} alt="action mortgage" src={mortgage} />
+                    </div>
                 </div>
                 <Bruincard user={props.game.players.find((player)=> player._id === props.user.id)} info={[props.user.id, props.game.players]} jailCards={jailCards} />
                 <div className={classes.nameBox}>
@@ -132,7 +144,41 @@ const useStyles = makeStyles(() => ({
         justifyContent: 'center',
         fontSize: '34px',
         color: 'white',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        position: 'relative',
+        '&:hover': {
+            '& $tooltiptext': {
+                visibility: 'visible'
+            }
+        }
+    },
+    tooltiptext: {
+        visibility: 'hidden',
+        fontFamily: 'VCR',
+        width: '180px',
+        backgroundColor: '#F7F2E7',
+        fontWeight: 'normal',
+        color: '#433F36',
+        textAlign: 'center',
+        padding: '10px 5px',
+        borderRadius: '6px',
+        position: 'absolute',
+        zIndex: '1',
+        bottom: '106%',
+        left: '80%',
+        marginLeft: '-60px',
+        fontSize: '19px',
+        border: '1px solid #C4B299',
+        "&::after": {
+            content: "''",
+            position: 'absolute',
+            top: '102%',
+            left: '23%',
+            marginLeft: '-5px',
+            borderWidth: '12px',
+            borderStyle: 'solid',
+            borderColor: '#C4B299 transparent transparent transparent'
+        }
     },
     actionImage: {
         height: '56px'
