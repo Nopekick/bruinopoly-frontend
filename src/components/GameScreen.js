@@ -4,7 +4,7 @@ import {Redirect} from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
-import { mapIdToName } from '../config';
+import { mapIdToName, ENV } from '../config';
 
 import Board from '../containers/Board';
 import Sidebar from './Sidebar';
@@ -17,7 +17,7 @@ import paw from '../assets/loadingpaw.png';
 export default function GameScreen(props){
     const classes = useStyles();
     const token = useSelector(state => state.lobbyReducer.token)
-    const game = useSelector(state => state.lobbyReducer.game)
+    //const game = useSelector(state => state.lobbyReducer.game)
     const heightMatch = useMediaQuery('(max-height:800px)');
 
     let handleStart = () => {
@@ -44,7 +44,7 @@ export default function GameScreen(props){
             {props.jailPopup && <JailPopup />}
             {props.winPopup && <WinPopup winner={props.winPopup}/>}
             <div className={classes.topBar}>
-                <p className={classes.testingLeave} onClick={handleLeave}>Leave Lobby (Testing)</p>
+                {ENV !== "PROD" && <p className={classes.testingLeave} onClick={handleLeave}>Leave Lobby (Testing)</p>}
                 {props.game.hasStarted && props.game.currentTurn && <p className={classes.currentTurn}>Current Turn: {mapIdToName(props.game.players, props.game.currentTurn)}</p>}
             </div>
             <Sidebar user={props.user} started={props.game.hasStarted} game={props.game} players={props.players}/>

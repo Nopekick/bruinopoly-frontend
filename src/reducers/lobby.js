@@ -430,8 +430,8 @@ export function lobbyReducer(state = initialState, action) {
             } else if (owner === null){
                 //CAN POTENTIALLY BUY
                 return {...state, salePopup: action.id}
-            } else if(owner !== state.userInfo.id && action.justOpening !== true) {
-                //no rent if property mortgaged
+            } else if(owner !== state.userInfo.id && action.justOpening !== true) {   //what is justOpening??
+                //No rent if property mortgaged
                 if(state.game.properties[action.id].isMortgaged === true){
                     return {...state}
                 }
@@ -440,14 +440,16 @@ export function lobbyReducer(state = initialState, action) {
                 let property = PROPERTIES[action.id]
                 const ownedProperties = state.game.players.find((p) => p._id === owner).propertiesOwned
 
-                let rent = 0; //= ownAll(action.id, ownedProperties) ? property.rent * 2 : property.rent
+                let rent = 0; 
                 if(property.utility === true){
+                    //UTILITY RENT
                     if(ownAll(action.id, ownedProperties)){
                         rent = action.movement * 10;
                     } else {
                         rent = action.movement * 4;
                     }
                 } else if(property.railroad === true){
+                    //RAILROAD RENT
                     switch(railroadCount(ownedProperties)){
                         case 1: rent = 25; break;
                         case 2: rent = 50; break;
@@ -456,6 +458,7 @@ export function lobbyReducer(state = initialState, action) {
                         default: rent = 0;
                     }
                 } else {
+                    //NORMAL RENT, CONSIDER DORMS
                     if(ownAll(action.id, ownedProperties) && state.game.properties[action.id].dormCount === 5){
                         rent = property.rent5;
                     } else if(ownAll(action.id, ownedProperties) && state.game.properties[action.id].dormCount === 4){
