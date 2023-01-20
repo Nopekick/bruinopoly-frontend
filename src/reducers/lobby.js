@@ -44,6 +44,7 @@ const OFFER_TRADE = "OFFER_TRADE"
 const RECEIVE_TRADE = "RECEIVE_TRADE"
 const ACCEPT_TRADE = "ACCEPT_TRADE"
 const HANDLE_ACCEPT_TRADE = "HANDLE_ACCEPT_TRADE"
+const RECEIVE_TRADE_DECISION = "RECEIVE_TRADE_DECISION"
 
 const OPEN_BUY_DORM = "OPEN_BUY_DORM"
 const OPEN_SELL_DORM = "OPEN_SELL_DORM"
@@ -313,16 +314,15 @@ export function lobbyReducer(state = initialState, action) {
                 return {...state, tradePopup: {receive: false}}
             else return {...state}
         case OFFER_TRADE:
+            const tradeRecipientName = state.game.players.find(p => p._id === action.obj.receivingPlayerId).name
             if(state.socket !== null)
                 state.socket.send(JSON.stringify(['game-events', [{type: 'OFFER_TRADE', ...action.obj}]]))
-            return {...state}
+            return {...state, tradePopup: {...state.tradePopup, decision: "AWAITING", sentTo: tradeRecipientName}}
+        case RECEIVE_TRADE_DECISION:
+            return {...state, tradePopup: {...state.tradePopup, decision: action.decision}}
         case ACCEPT_TRADE:
             //Logic for handling trade when this player accepts trade
-            let tempTradeObj = {...state.tradePopup}
-            delete tempTradeObj.type
-            if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'ACCEPT_TRADE', ...tempTradeObj}]]))
-            //return {...state, tradePopup: null}
+            const tempTradeObj = {...state.tradePopup}
 
             return {...state, tradePopup: null, game: {...state.game, properties: state.game.properties.map((p,i) => {
                 if(tempTradeObj.propertiesOutgoing.includes(i)){
@@ -373,7 +373,7 @@ export function lobbyReducer(state = initialState, action) {
                 moneyOutgoing: ...
                 moneyIncoming: ...
             } */  
-            return {...state, tradePopup: null, game: {...state.game, properties: state.game.properties.map((p,i) => {
+            return {...state, game: {...state.game, properties: state.game.properties.map((p,i) => {
                 if(action.obj.propertiesOutgoing.includes(i)){
                     return {...p, ownerId: action.obj.receivingPlayerId}
                 } else if(action.obj.propertiesIncoming.includes(i)){
@@ -724,6 +724,9 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
             case 'offered-trade':
                 dispatch({type: RECEIVE_TRADE, obj: {...data[1]} })
                 break;
+            case 'trade-decision':
+                dispatch({type: RECEIVE_TRADE_DECISION, decision: data[1].decision})
+                break;
             case 'game-events':
                 console.log(data[1][0])
                 let event = data[1][0]
@@ -797,7 +800,7 @@ export const createRoom = (data) => async (dispatch) => {
 export const getRooms = () => async (dispatch) => {
     try {
         let result = await axios.get(`${API_URL}/rooms`)
-       // console.log(result.data)
+        
         dispatch({type: SET_ROOMS_LIST, rooms: result.data.rooms})
     } catch(e){
        // console.log(e)
@@ -892,6 +895,25 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     //(4) LAND ON GOTO JAIL => GO TO JAIL
 }
 
+export const tradeDecision = (decision) => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    const tradeInfo = getState().lobbyReducer.tradePopup
+    delete tradeInfo.type
+
+    if(decision === "ACCEPT") {
+        if(socket !== null)
+            socket.send(JSON.stringify(['game-events', [{type: 'ACCEPT_TRADE', ...tradeInfo}]]))
+       
+        dispatch({type: ACCEPT_TRADE})
+
+    } else if(decision === "REJECT") {
+        if(socket !== null)
+            socket.send(JSON.stringify(['game-events', [{type: 'REJECT_TRADE', ...tradeInfo}]]))
+
+        dispatch({type: CANCEL_TRADE})
+    }
+}
+
 export const handlePurchase = ({buy, property}) => async (dispatch) => {
     if(buy === true){
         let propertyData = PROPERTIES[property];
@@ -902,7 +924,7 @@ export const handlePurchase = ({buy, property}) => async (dispatch) => {
 }
 
 export const setUserInfo = (info) => async (dispatch) => {
-    let {name, major, year} = info;
+    let {name} = info;
     if(!name || name === ""){
         return
     }

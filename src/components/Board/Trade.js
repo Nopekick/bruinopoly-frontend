@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux'
 import {PROPERTIES, getColor } from '../../config';
+import { tradeDecision } from '../../reducers/lobby';
 
 import mortgage from '../../assets/mortgage_black.png'
 import arrow from '../../assets/price_change.png'
@@ -88,15 +89,8 @@ export default function TradePopup(props){
         dispatch({type: "CANCEL_TRADE"})
     }
 
-    let handleReject = () => {
-        //TODO: tell other person to close trade tab
-        dispatch({type: "CANCEL_TRADE"})
-    }
-
-    let handleAccept = () => {
-        //TODO: check that trade hasn't been modified since receiving it
-        console.log("CALLING DISPATCH ACCEPT_TRADE")
-        dispatch({type: "ACCEPT_TRADE"})
+    let handleTradeDecision = (decision) => {
+        dispatch(tradeDecision(decision))
     }
 
     let handleMyProperties = (propertyNum) => {
@@ -205,9 +199,9 @@ export default function TradePopup(props){
                 </div>
                 {trade.receive ? (
                     <div style={{display: 'flex', justifyContent: 'space-around', width: '100%'}}>
-                        <button onClick={handleAccept} className={classes.button} style={{width: '143px'}}>ACCEPT</button>
-                        <button className={classes.button} style={{width: '143px', cursor: 'default', backgroundColor: 'gray'}}>COUNTER</button>
-                        <button onClick={handleReject}  className={classes.button} style={{width: '143px'}}>REJECT</button>
+                        <button onClick={()=>{handleTradeDecision("ACCEPT")}} className={classes.button} style={{width: '143px'}}>ACCEPT</button>
+                        {/*<button className={classes.button} style={{width: '143px', cursor: 'default', backgroundColor: 'gray'}}>COUNTER</button>*/}
+                        <button onClick={()=>{handleTradeDecision("REJECT")}}  className={classes.button} style={{width: '143px'}}>REJECT</button>
                     </div>)  : (<div style={{display: 'flex', justifyContent: 'space-around', width: '78%'}}>
                         <button onClick={handleOffer} className={classes.button} style={{width: '158px'}}>OFFER</button>
                         <button onClick={handleClose} className={classes.button} style={{width: '158px'}}>CANCEL</button>

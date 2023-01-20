@@ -13,6 +13,7 @@ import CardPopup from './CardPopup'
 import TradePopup from './Trade'
 import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
+import TradeResult from './TradeResult';
 
 export default function Board(props){
     const classes = useStyles();
@@ -22,7 +23,8 @@ export default function Board(props){
             {props.mortgagePopup && <MortgagePopup />}
             {props.salePopup && <SalePopup property={props.salePopup} />}
             {props.propertyPopup && <PropertyPopup />}
-            {props.tradePopup && <TradePopup />}
+            {props.tradePopup && !props.tradePopup.decision && <TradePopup />}
+            {props.tradePopup && props.tradePopup.decision && <TradeResult />}
             {props.chestPopup !== null && <CardPopup info={CHEST[props.chestPopup]} chest={true} name={props.name}/>}
             {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup]} chance={true} name={props.name}/>}
             {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
