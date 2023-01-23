@@ -864,6 +864,7 @@ const handleFees = ({id}) => async (dispatch, getState) => {
 }
 
 export const turnLogic = ({movement, id, destination, doubles}) => async (dispatch, getState) => {
+    console.log("Inside turn logic", movement, id, destination, doubles)
     dispatch({type: HIDE_DICE})
     //const socket = getState().lobbyReducer.socket
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)

@@ -22,7 +22,7 @@ export default function Sidebar(props){
     const dispatch = useDispatch()
 
     useEffect(()=>{
-        let diffSec = differenceInSeconds(new Date(props.game.startDate), new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"})))
+        let diffSec = Maths.abs(differenceInSeconds(new Date(props.game.startDate), new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"}))))
         
         let interval = setInterval(()=>{
             if(diffSec <= 0) {
