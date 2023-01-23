@@ -116,6 +116,7 @@ function DiceBox() {
         const end_time = new Date(startDate);
         end_time.setMinutes(end_time.getMinutes() + Number(timeLimit));
         const cur_time = new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"}));
+        console.log(startDate, end_time, cur_time)
         if (cur_time >= end_time && !doubles) return dispatch(requestGameOver())
        
         //Continue with roll logic
@@ -137,7 +138,7 @@ function DiceBox() {
         let movement = leftDice + rightDice
         let destination = (players.filter(p => p._id === user.id)[0].currentTile + movement) % 40
 
-        // dispatch(handleMovement())
+        
         dispatch(turnLogic({movement, id: user.id, destination, doubles: leftDice === rightDice}))
     }
 
