@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import {turnLogic} from '../../reducers/lobby'
+import {turnLogic, requestGameOver, handleEndTurn} from '../../reducers/lobby'
 import { makeStyles } from '@material-ui/core/styles';
 import { positions, sleep, CHEST, CHANCE } from '../../config'
 import B from '../../assets/B.png';
@@ -13,21 +13,27 @@ import CardPopup from './CardPopup'
 import TradePopup from './Trade'
 import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
-import JailPopup from './JailPopup';
+import TradeResult from './TradeResult';
 
 export default function Board(props){
+    const endTurnInProgress = useSelector(state => state.lobbyReducer.endTurnInProgress)
+    const hideDice = useSelector(state => state.lobbyReducer.hideDice)
     const classes = useStyles();
+
 
     return(
         <div className={classes.board}>
             {props.mortgagePopup && <MortgagePopup />}
             {props.salePopup && <SalePopup property={props.salePopup} />}
             {props.propertyPopup && <PropertyPopup />}
-            {props.tradePopup && <TradePopup />}
+            {props.tradePopup && !props.tradePopup.decision && <TradePopup />}
+            {props.tradePopup && props.tradePopup.decision && <TradeResult />}
             {props.chestPopup !== null && <CardPopup info={CHEST[props.chestPopup]} chest={true} name={props.name}/>}
             {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup]} chance={true} name={props.name}/>}
             {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
-            {props.turn && <DiceBox />}
+            {props.turn && !hideDice && <DiceBox />}
+            {endTurnInProgress && <EndTurnAlerter />}
+
             <img draggable="false" alt="bruinopoly text" className={classes.Bruinopoly} src={Bruinopoly} />
             <img draggable="false" alt="B" className={classes.B} src={B} />
             <img draggable="false" alt="financial aid card" className={classes.FinAidCards} src={FinAidCards} />
@@ -62,9 +68,40 @@ export default function Board(props){
 
 }
 
-function DiceBox(){
+function EndTurnAlerter() {
+    const [timeToEnd, changeTimeToEnd] = useState(60)
+    const dispatch = useDispatch()
+    const classes = turnStyles();
+
+    useEffect(() => {
+        const interval = setInterval(()=>{
+            if(timeToEnd > 0) changeTimeToEnd(t => t - 1)
+        }, 1000)
+        const timeout = setTimeout(()=>{
+            clearInterval(interval)
+            dispatch(handleEndTurn())
+        }, 30000)
+
+        return () => {
+            clearInterval(interval)
+            clearTimeout(timeout)
+        }
+    }, [])
+
+    return (
+        <div className={classes.turnBox}>
+            <div className={classes.text}>Turn ending in {timeToEnd} seconds</div>
+            <button onClick={()=>{dispatch(handleEndTurn())}} className={classes.button}>END TURN</button>
+        </div>
+    )
+
+}
+
+function DiceBox() {
     const players = useSelector(state => state.lobbyReducer.game.players)
     const user = useSelector(state => state.lobbyReducer.userInfo)
+    const {startDate, timeLimit} = useSelector(state => state.lobbyReducer.game)
+    const doubles = useSelector(state => state.lobbyReducer.doubles)
     const dispatch = useDispatch()
 
     const classes = diceStyles();
@@ -74,7 +111,14 @@ function DiceBox(){
 
     let handleRoll = async () => {
         if(haveRolled) return
+
+        //If game should end and player isn't in middle of turn (doubles), don't let turn happen and notify server
+        const end_time = new Date(startDate);
+        end_time.setMinutes(end_time.getMinutes() + Number(timeLimit));
+        const cur_time = new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"}));
+        if (cur_time >= end_time && !doubles) return dispatch(requestGameOver())
        
+        //Continue with roll logic
         let leftDice = Math.floor(Math.random()*6+1)
         let rightDice = Math.floor(Math.random()*6+1)
 
@@ -303,4 +347,34 @@ const diceStyles = makeStyles(() => ({
         borderRadius: '50%',
         position: 'absolute'
     }
+}))
+
+const turnStyles = makeStyles(() => ({
+    turnBox: {
+        width: '170px',
+        height: '86px',
+        position: 'absolute',
+        left: '115px',
+        bottom: '115px',
+        zIndex: 4,
+    },
+    text: {
+        fontFamily: 'ChelseaMarket',
+        fontSize: '22px',
+        color: '#433F36',
+       
+    },
+    button: {
+        padding: '4px 10px',
+        textAlign: 'center',
+        fontFamily: 'ChelseaMarket',
+        fontSize: '20px',
+        borderRadius: '5px',
+        backgroundColor: '#C5B49C',
+        border: 'none',
+        cursor: 'pointer',
+        marginBottom: '10px',
+        color: 'white',
+        outline: 'none'
+    },
 }))

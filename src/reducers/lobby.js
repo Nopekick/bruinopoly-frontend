@@ -17,6 +17,7 @@ const REQUEST_START = "REQUEST_START"
 const START_GAME = "START_GAME"
 const START_TURN = "START_TURN"
 const SET_TURN = "SET_TURN"
+const INITIATE_END_TURN = "INITIATE_END_TURN"
 const END_TURN = "END_TURN"
 const SET_HOST_SELF = "SET_HOST_SELF"
 const SET_HOST = "SET_HOST"
@@ -44,6 +45,7 @@ const OFFER_TRADE = "OFFER_TRADE"
 const RECEIVE_TRADE = "RECEIVE_TRADE"
 const ACCEPT_TRADE = "ACCEPT_TRADE"
 const HANDLE_ACCEPT_TRADE = "HANDLE_ACCEPT_TRADE"
+const RECEIVE_TRADE_DECISION = "RECEIVE_TRADE_DECISION"
 
 const OPEN_BUY_DORM = "OPEN_BUY_DORM"
 const OPEN_SELL_DORM = "OPEN_SELL_DORM"
@@ -63,14 +65,13 @@ const CLOSE_CARDS = "CLOSE_CARDS"
 
 //actions types to handle game-events from server
 const ADD_PROPERTY = "ADD_PROPERTY"
-const PAY_FEES = "PAY_FEES"
 const HANDLE_RENT = "HANDLE_RENT"
 const GAME_OVER = "GAME_OVER"
 
 //FOR TESTING
 const BUY_ALL_PROPERTIES = "BUY_ALL_PROPERTIES"
 const TEST_ADD_PLAYER = "TEST_ADD_PLAYER"
-const TEST_ADD_PLAYERS = "TEST_ADD_PLAYERS"
+// const TEST_ADD_PLAYERS = "TEST_ADD_PLAYERS"
 const TEST_MOVE_ALL_TO = "TEST_MOVE_ALL_TO"
 const TEST_ALL_TO_JAIL = "TEST_ALL_TO_JAIL"
 const TEST_ADD_JAIL_CARDS = "TEST_ADD_JAIL_CARDS"
@@ -100,7 +101,9 @@ const initialState = {
     winPopup: null,
     jailPopup: null,
     doubles: null,
-    jailCards: 0
+    jailCards: 0,
+    endTurnInProgress: false,
+    hideDice: true
 }
 
 export function lobbyReducer(state = initialState, action) {
@@ -170,13 +173,15 @@ export function lobbyReducer(state = initialState, action) {
             })
 
             return {...state, jailCards: 0, tradePopup: null, doubles: null, gameID: action.id, game: action.room, lobbyError: null, joinRoomError: null, salePopup: null,
-                createRoomError: null, userInfo: {...state.userInfo, id: playerId}, jailPopup: null, propertyPopup: null, chestPopup: null, chancePopup: null, winPopup: null}
+                createRoomError: null, userInfo: {...state.userInfo, id: playerId}, jailPopup: null, propertyPopup: null, chestPopup: null, chancePopup: null, winPopup: null, 
+                endTurnInProgress: false, hideDice: true}
         case LEAVE_ROOM:
             if(state.socket !== null && typeof state.socket.close !== "undefined")
                 state.socket.close()
             //SHOULD TOKEN BECOME NULL UPON LEAVING ROOM? MAYBE CHANGE LATER
             return {...state, gameID: null, yourTurn: false, isHost: false, messages: [], players: null, game: null, socket: null, doubles: null, jailPopup: null,
-                 chancePopup: null, chestPopup: null, salePopup: null, tradePopup: null, propertyPopup: null, token: null, winPopup: null, jailCards: 0}
+                 chancePopup: null, chestPopup: null, salePopup: null, tradePopup: null, propertyPopup: null, token: null, winPopup: null, jailCards: 0,
+                  endTurnInProgress: false, hideDice: true}
         case UPDATE_PLAYERS:
             return {...state, players: action.players}
         case ADD_MESSAGE:
@@ -205,14 +210,14 @@ export function lobbyReducer(state = initialState, action) {
         case START_GAME:
             return {...state, game: action.game}
         case START_TURN:
-            return {...state, yourTurn: true}
+            return {...state, yourTurn: true, hideDice: false}
         case SET_TURN:
             return {...state, game: {...state.game, currentTurn: action.id}}
         case END_TURN:
-            if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'END_TURN'}]]))
-
-            return {...state, yourTurn: false}
+            return {...state, yourTurn: false, endTurnInProgress: false, mortgagePopup: null, salePopup: null, propertyPopup: null,
+                 tradePopup: null, chancePopup: null, chestPopup: null}
+        case INITIATE_END_TURN:
+            return {...state, endTurnInProgress: true}
         case MOVE_ONE:
             let p1 = state.game.players.filter(p => p._id === action.id)[0]
 
@@ -227,18 +232,18 @@ export function lobbyReducer(state = initialState, action) {
         case DOUBLES:
             //Logic when player rolls double: go to jail on 3rd consecutive doubles roll
             if(state.doubles === null){
-                return {...state, yourTurn: true, doubles: {show: true, number: 1}}
+                return {...state, yourTurn: true, hideDice: false, doubles: {show: true, number: 1}}
             } else if(state.doubles.number === 2){
                 if(state.socket !== null){
                     state.socket.send(JSON.stringify(['game-events', [{type: 'GO_TO_JAIL', playerId: state.userInfo.id}, {type: 'END_TURN'}] ]))
                 }
                 
-                return {...state, yourTurn: false, doubles: {show: true, number: 3}, game: {...state.game, players: state.game.players.map((player)=>{
+                return {...state, yourTurn: false, hideDice: true, doubles: {show: true, number: 3}, game: {...state.game, players: state.game.players.map((player)=>{
                     if(player._id !== state.userInfo.id) return player
                     else return {...player, currentTile: 10, turnsInJail: 3}
                 })}} 
             } else {
-                return {...state, yourTurn: true, doubles: {show: true, number: 2}}
+                return {...state, yourTurn: true, hideDice: false, doubles: {show: true, number: 2}}
             }   
         case MOVEMENT:
             let p2 = state.game.players.filter(p => p._id === state.userInfo.id)[0]
@@ -316,16 +321,15 @@ export function lobbyReducer(state = initialState, action) {
                 return {...state, tradePopup: {receive: false}}
             else return {...state}
         case OFFER_TRADE:
+            const tradeRecipientName = state.game.players.find(p => p._id === action.obj.receivingPlayerId).name
             if(state.socket !== null)
                 state.socket.send(JSON.stringify(['game-events', [{type: 'OFFER_TRADE', ...action.obj}]]))
-            return {...state}
+            return {...state, tradePopup: {...state.tradePopup, decision: "AWAITING", sentTo: tradeRecipientName}}
+        case RECEIVE_TRADE_DECISION:
+            return {...state, tradePopup: {...state.tradePopup, decision: action.decision}}
         case ACCEPT_TRADE:
             //Logic for handling trade when this player accepts trade
-            let tempTradeObj = {...state.tradePopup}
-            delete tempTradeObj.type
-            if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'ACCEPT_TRADE', ...tempTradeObj}]]))
-            //return {...state, tradePopup: null}
+            const tempTradeObj = {...state.tradePopup}
 
             return {...state, tradePopup: null, game: {...state.game, properties: state.game.properties.map((p,i) => {
                 if(tempTradeObj.propertiesOutgoing.includes(i)){
@@ -376,7 +380,7 @@ export function lobbyReducer(state = initialState, action) {
                 moneyOutgoing: ...
                 moneyIncoming: ...
             } */  
-            return {...state, tradePopup: null, game: {...state.game, properties: state.game.properties.map((p,i) => {
+            return {...state, game: {...state.game, properties: state.game.properties.map((p,i) => {
                 if(action.obj.propertiesOutgoing.includes(i)){
                     return {...p, ownerId: action.obj.receivingPlayerId}
                 } else if(action.obj.propertiesIncoming.includes(i)){
@@ -430,8 +434,8 @@ export function lobbyReducer(state = initialState, action) {
             } else if (owner === null){
                 //CAN POTENTIALLY BUY
                 return {...state, salePopup: action.id}
-            } else if(owner !== state.userInfo.id && action.justOpening !== true) {
-                //no rent if property mortgaged
+            } else if(owner !== state.userInfo.id && action.justOpening !== true) {   //what is justOpening??
+                //No rent if property mortgaged
                 if(state.game.properties[action.id].isMortgaged === true){
                     return {...state}
                 }
@@ -440,14 +444,16 @@ export function lobbyReducer(state = initialState, action) {
                 let property = PROPERTIES[action.id]
                 const ownedProperties = state.game.players.find((p) => p._id === owner).propertiesOwned
 
-                let rent = 0; //= ownAll(action.id, ownedProperties) ? property.rent * 2 : property.rent
+                let rent = 0; 
                 if(property.utility === true){
+                    //UTILITY RENT
                     if(ownAll(action.id, ownedProperties)){
                         rent = action.movement * 10;
                     } else {
                         rent = action.movement * 4;
                     }
                 } else if(property.railroad === true){
+                    //RAILROAD RENT
                     switch(railroadCount(ownedProperties)){
                         case 1: rent = 25; break;
                         case 2: rent = 50; break;
@@ -456,6 +462,7 @@ export function lobbyReducer(state = initialState, action) {
                         default: rent = 0;
                     }
                 } else {
+                    //NORMAL RENT, CONSIDER DORMS
                     if(ownAll(action.id, ownedProperties) && state.game.properties[action.id].dormCount === 5){
                         rent = property.rent5;
                     } else if(ownAll(action.id, ownedProperties) && state.game.properties[action.id].dormCount === 4){
@@ -539,7 +546,7 @@ export function lobbyReducer(state = initialState, action) {
             else 
                 return {...state, chancePopup: null, chestPopup: null, doubles: {...state.doubles, show: false}}
         case HIDE_DICE:
-            return {...state, yourTurn: false}
+            return {...state, hideDice: true}
         case ADD_PROPERTY:
             let temp =[...state.game.properties]
             temp[action.property.id] = {...state.game.properties[action.property.id], ownerId: action.playerId}
@@ -553,14 +560,6 @@ export function lobbyReducer(state = initialState, action) {
                         propertiesOwned: [...p.propertiesOwned, action.property.id]
                     }
                 })}}
-        case PAY_FEES:
-            if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: action.id, moneyChange: -200}] ]))
-
-            return {...state, game: {...state.game, players: state.game.players.map((p)=>{
-                if(p._id !== action.id) return p
-                else return {...p, money: p.money - 200}
-            })}}
         case OPEN_MORTGAGE:
             if(state.yourTurn === true)
                 return {...state, mortgagePopup: {}}
@@ -667,7 +666,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
     //console.log(id, name, password)
     let socket;
     try {
-        socket = new WebSocket(`ws://${SOCKET_URL}?room_id=${id}&name=${name}&password=${password}&token=${token}`);
+        socket = new WebSocket(`${SOCKET_URL}?room_id=${id}&name=${name}&password=${password}&token=${token}`);
     } catch(e){
         console.log("An error occurred: ", e)
         return dispatch({type: JOIN_ROOM_ERROR, error: "Failed to join room"})
@@ -724,6 +723,9 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
             case 'offered-trade':
                 dispatch({type: RECEIVE_TRADE, obj: {...data[1]} })
                 break;
+            case 'trade-decision':
+                dispatch({type: RECEIVE_TRADE_DECISION, decision: data[1].decision})
+                break;
             case 'game-events':
                 console.log(data[1][0])
                 let event = data[1][0]
@@ -766,6 +768,9 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                     case "RENT":
                         dispatch({type: HANDLE_RENT, rent: event.rent, playerId: event.playerId, ownerId: event.propertyOwner})
                         break;
+                    case "CLOSE_TRADE":
+                        dispatch({type: CANCEL_TRADE})
+                        break;
                     default:
                         console.log("game-events default")
                 }
@@ -797,7 +802,7 @@ export const createRoom = (data) => async (dispatch) => {
 export const getRooms = () => async (dispatch) => {
     try {
         let result = await axios.get(`${API_URL}/rooms`)
-       // console.log(result.data)
+
         dispatch({type: SET_ROOMS_LIST, rooms: result.data.rooms})
     } catch(e){
        // console.log(e)
@@ -817,6 +822,16 @@ export const requestStart = () => async (dispatch) => {
 export const leaveLobby = () => async (dispatch) => {
     dispatch({type: LEAVE_ROOM})
 };
+
+export const requestGameOver = () => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    
+    if(socket !== null) {
+        socket.send(JSON.stringify(['game-events', [{type: 'END_TURN'}]]))
+        socket.send(JSON.stringify(['game-events', [{type: 'CLOSE_TRADE'}]]))
+    }
+    dispatch({type: END_TURN})
+}
 
 export const handleMovement = ({movement, id, doubles, onlyMove}) => async (dispatch, getState) => {
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)
@@ -840,7 +855,17 @@ export const handleMovement = ({movement, id, doubles, onlyMove}) => async (disp
     }
 }
 
+const handleFees = ({id}) => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    if(socket !== null)
+        socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: id, moneyChange: -200}] ]))
+
+    dispatch({type: HANDLE_CHANGE_MONEY, playerId: id, money: -200})
+}
+
 export const turnLogic = ({movement, id, destination, doubles}) => async (dispatch, getState) => {
+    dispatch({type: HIDE_DICE})
+    //const socket = getState().lobbyReducer.socket
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)
     const doubleState = getState().lobbyReducer.doubles
 
@@ -859,7 +884,7 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     } else if(TILES[destination].type === TileType.CHEST){
         dispatch({type: DRAW_CHEST})
     } else if(TILES[destination].type === TileType.FEES){
-        dispatch({type: PAY_FEES, id})
+        dispatch(handleFees({id}))
     } else {
         if(destination === 30){
             dispatch({type: GO_TO_JAIL, id, tellServer: true})
@@ -869,14 +894,43 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     if(doubles){
         dispatch({type: DOUBLES})
     } else {
-        console.log("ENDING TURN")
-        dispatch({type: END_TURN})
+        dispatch({type: INITIATE_END_TURN})
     }
 
     //(1) LAND ON PROPERTY => BUY/SKIP IF NOT OWNED, PAY RENT IF OWNED
     //(2) LAND ON CARD DRAW (COMMUNITY CHEST OR CHANCE)=> DRAW CARD, DO CARD EFFECTS,
     //(3) LAND ON FEES => PAY FEES
     //(4) LAND ON GOTO JAIL => GO TO JAIL
+}
+
+export const handleEndTurn = () => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    const turn = getState().lobbyReducer.yourTurn
+
+    if(!turn) return;
+    if(socket !== null) {
+        socket.send(JSON.stringify(['game-events', [{type: 'END_TURN'}]]))
+    }
+    dispatch({type: END_TURN})
+}
+
+export const tradeDecision = (decision) => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    const tradeInfo = getState().lobbyReducer.tradePopup
+    delete tradeInfo.type
+
+    if(decision === "ACCEPT") {
+        if(socket !== null)
+            socket.send(JSON.stringify(['game-events', [{type: 'ACCEPT_TRADE', ...tradeInfo}]]))
+       
+        dispatch({type: ACCEPT_TRADE})
+
+    } else if(decision === "REJECT") {
+        if(socket !== null)
+            socket.send(JSON.stringify(['game-events', [{type: 'REJECT_TRADE', ...tradeInfo}]]))
+
+        dispatch({type: CANCEL_TRADE})
+    }
 }
 
 export const handlePurchase = ({buy, property}) => async (dispatch) => {
@@ -889,7 +943,7 @@ export const handlePurchase = ({buy, property}) => async (dispatch) => {
 }
 
 export const setUserInfo = (info) => async (dispatch) => {
-    let {name, major, year} = info;
+    let {name} = info;
     if(!name || name === ""){
         return
     }

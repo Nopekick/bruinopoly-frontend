@@ -102,7 +102,7 @@ const PROPERTIES = {
     id: 12,
     name: 'Royce',
     price: 150,
-    rent: 0,
+    rent: "Own 1 Utility: rent is 4x the roll. Own 2 Utility: rent is 10x the roll.",
     railroad: false,
     utility: true,
     mortgage: 75
@@ -279,7 +279,7 @@ const PROPERTIES = {
     id: 28,
     name: 'Powell',
     price: 150,
-    rent: 0,
+    rent: "Own 1 Utility: rent is 4x the roll. Own 2 Utility: rent is 10x the roll.",
     railroad: false,
     utility: true,
     mortgage: 75

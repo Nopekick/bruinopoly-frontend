@@ -33,6 +33,7 @@ let sleep = (sec) => {
 
 let API_URL = process.env.REACT_APP_API_URL;
 let SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
+let ENV = process.env.REACT_APP_ENV
 
 let majors = ["Aerospace Engineering",
     "African American Studies",
@@ -315,6 +316,6 @@ let mapIdToName = (players, id) => {
     return p.name
 }
 
-export {majors, API_URL, SOCKET_URL, minGameTime, positions, sleep, CHANCE, CHEST, 
+export {majors, API_URL, SOCKET_URL, ENV, minGameTime, positions, sleep, CHANCE, CHEST, 
     PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos, 
     propertyPos, jailPosJail, jailPosNoJail}
