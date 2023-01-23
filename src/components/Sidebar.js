@@ -18,8 +18,6 @@ export default function Sidebar(props){
 
     const classes = useStyles();
     const turn = useSelector(state => state.lobbyReducer.yourTurn)
-    // const players = useSelector(state => state.lobbyReducer.game.players)
-    // const player = useSelector(state => state.lobbyReducer.userInfo)
     const [timeLeft, setTimeLeft] = useState("00:00")
     const dispatch = useDispatch()
 
