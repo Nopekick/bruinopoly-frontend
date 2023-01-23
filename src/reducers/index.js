@@ -19,7 +19,7 @@ const createRootReducer = () => combineReducers({
 
 const persistedReducer = persistReducer(persistConfig, createRootReducer())
 
-let store = createStore(persistedReducer, ENV !== "LOCAL" ? applyMiddleware(thunk) : composeEnhancers(applyMiddleware(thunk)))
+let store = createStore(persistedReducer, ENV !== "PROD" ? composeEnhancers(applyMiddleware(thunk)) : applyMiddleware(thunk))
 let persistor = persistStore(store)
    
 export { store, persistor }
