@@ -23,6 +23,14 @@ export default function Sidebar(props){
 
     useEffect(()=>{
         let diffSec = differenceInSeconds(new Date(props.game.startDate), new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"})))
+        if(diffSec <= 0) {
+            setTimeLeft("00:00")
+        } else if(diffSec/60 > 60){
+            setTimeLeft("60:00+")
+        } else {
+            let sec = (diffSec % 60)
+            setTimeLeft(`${Math.floor(diffSec/60)}:${sec<10? ("0"+sec) : sec}`) 
+        }
         
         let interval = setInterval(()=>{
             if(diffSec <= 0) {

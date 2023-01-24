@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux'
 import {PROPERTIES, getColor} from '../../config';
 
-export default function PropertyPopup(props){
+export default function PropertyPopup(){
     const player = useSelector(state => state.lobbyReducer.userInfo)
     const thisPopup = useSelector(state => state.lobbyReducer.propertyPopup)
     const properties = useSelector(state => state.lobbyReducer.game.properties)
@@ -26,6 +26,7 @@ export default function PropertyPopup(props){
             dispatch({type: "BUY_DORM", propertyId: propertyNum, playerId: player.id, send: true})
         } else if(thisPopup.sell === true && properties[propertyNum].dormCount > 0 
             && checkProposedDormTransaction(properties[propertyNum].dormCount - 1, propertyNum, properties)){
+
             dispatch({type: "SELL_DORM", propertyId: propertyNum, playerId: player.id, send: true})
         }
     }

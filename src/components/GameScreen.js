@@ -1,10 +1,11 @@
-import React from 'react';
-import { useSelector } from 'react-redux'
+import React, {useEffect} from 'react';
+import { useSelector, useDispatch } from 'react-redux'
 import {Redirect} from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
 import { mapIdToName, ENV } from '../config';
+import { checkSocket } from '../reducers/lobby';
 
 import Board from '../containers/Board';
 import Sidebar from './Sidebar';
@@ -16,9 +17,14 @@ import paw from '../assets/loadingpaw.png';
 
 export default function GameScreen(props){
     const classes = useStyles();
+    const dispatch = useDispatch();
     const token = useSelector(state => state.lobbyReducer.token)
-    //const game = useSelector(state => state.lobbyReducer.game)
+    const socket = useSelector(state => state.lobbyReducer.socket)
     const heightMatch = useMediaQuery('(max-height:800px)');
+
+    useEffect(() => {
+        dispatch(checkSocket())
+    }, [socket])
 
     let handleStart = () => {
         props.requestStart()

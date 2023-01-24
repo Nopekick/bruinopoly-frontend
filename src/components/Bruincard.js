@@ -47,7 +47,7 @@ function JailCard(props){
 
     return <div onClick={handleUse} style={{height: '30px', width: '62px', borderRadius: '5px', backgroundColor: '#F5D34D', 
     position: 'absolute', right: '168px', top: props.top, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'}}>
-        <img style={{width: '21px'}} src={murphy} />
+        <img style={{width: '21px'}} src={murphy} alt="jail"/>
     </div>
 }
 

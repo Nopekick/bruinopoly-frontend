@@ -7,7 +7,7 @@ import ClearIcon from '@material-ui/icons/Clear';
 import blob1 from '../assets/blob1.png'
 import blob2 from '../assets/blob2.png'
 import dropdown from '../assets/dropdown.png'
-import {minGameTime } from '../config'
+import {minGameTime, ENV } from '../config'
 
 export default function Lobby(props){
     const classes = useStyles();
@@ -136,7 +136,7 @@ export default function Lobby(props){
                         <div className={classes.roomOptionsText}>TIME LIMIT: </div>
                         <select value={length} className={`${classes.roomInput} ${classes.dropdownStyle}`} 
                             onChange={(e)=>{setLength(e.target.value)}} >
-                            <option value={1}>1 MIN</option>
+                            {ENV !== "PROD" && <option value={1}>1 MIN</option>}
                             {Array.apply(null, Array(12)).map((v, i)=>{
                                 return <option key={i} value={10*i+minGameTime}>{10*i+minGameTime} MIN</option>
                             })}

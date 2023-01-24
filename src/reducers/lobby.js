@@ -82,6 +82,7 @@ const initialState = {
     redirectTo: null,
     rooms: null,
     socket: null,
+    socketParams: null,
     lobbyError: null,
     joinRoomError: null,
     createRoomError: null,
@@ -102,7 +103,7 @@ const initialState = {
     jailPopup: null,
     doubles: null,
     jailCards: 0,
-    endTurnInProgress: false,
+    endTurnInProgress: null,
     hideDice: true
 }
 
@@ -174,19 +175,18 @@ export function lobbyReducer(state = initialState, action) {
 
             return {...state, jailCards: 0, tradePopup: null, doubles: null, gameID: action.id, game: action.room, lobbyError: null, joinRoomError: null, salePopup: null,
                 createRoomError: null, userInfo: {...state.userInfo, id: playerId}, jailPopup: null, propertyPopup: null, chestPopup: null, chancePopup: null, winPopup: null, 
-                endTurnInProgress: false, hideDice: true}
+                endTurnInProgress: null, hideDice: true}
         case LEAVE_ROOM:
             if(state.socket !== null && typeof state.socket.close !== "undefined")
                 state.socket.close()
             //SHOULD TOKEN BECOME NULL UPON LEAVING ROOM? MAYBE CHANGE LATER
             return {...state, gameID: null, yourTurn: false, isHost: false, messages: [], players: null, game: null, socket: null, doubles: null, jailPopup: null,
                  chancePopup: null, chestPopup: null, salePopup: null, tradePopup: null, propertyPopup: null, token: null, winPopup: null, jailCards: 0,
-                  endTurnInProgress: false, hideDice: true}
+                  endTurnInProgress: null, hideDice: true}
         case UPDATE_PLAYERS:
             return {...state, players: action.players}
         case ADD_MESSAGE:
             if(state.socket !== null && action.send){
-                //console.log(state.socket)
                 state.socket.send(JSON.stringify(['message', action.message]))
             }
             return {...state, messages: [...state.messages, action.message]}
@@ -195,7 +195,7 @@ export function lobbyReducer(state = initialState, action) {
                 state.socket.send(JSON.stringify(['request-start']))
             return {...state}
         case SET_SOCKET:
-            return {...state, socket: action.socket}
+            return {...state, socket: action.socket, socketParams: action.info}
         case SET_HOST_SELF: 
             if(action.token) {
                 return {...state, isHost: true, token: action.token}
@@ -214,10 +214,10 @@ export function lobbyReducer(state = initialState, action) {
         case SET_TURN:
             return {...state, game: {...state.game, currentTurn: action.id}}
         case END_TURN:
-            return {...state, yourTurn: false, endTurnInProgress: false, mortgagePopup: null, salePopup: null, propertyPopup: null,
+            return {...state, yourTurn: false, endTurnInProgress: null, mortgagePopup: null, salePopup: null, propertyPopup: null,
                  tradePopup: null, chancePopup: null, chestPopup: null}
         case INITIATE_END_TURN:
-            return {...state, endTurnInProgress: true}
+            return {...state, endTurnInProgress: new Date().toString()}
         case MOVE_ONE:
             let p1 = state.game.players.filter(p => p._id === action.id)[0]
 
@@ -672,15 +672,16 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
         return dispatch({type: JOIN_ROOM_ERROR, error: "Failed to join room"})
     }
     
-    dispatch({type: SET_SOCKET, socket})
+    dispatch({type: SET_SOCKET, socket, info: {id, name, password, token}})
 
-    socket.addEventListener('open', function (event) {
-        //console.log("open event")
-    });
+    socket.addEventListener('open',() => {
+        // console.log("Websocket server connection successful")
+    })
 
-    socket.addEventListener('error', function (event) {
-        //console.log("Error event")
-    });
+    socket.addEventListener('close',(e) => {
+        // console.log("Websocket server connection closed")
+    })
+
 
     socket.addEventListener('message', function(event) {
         let data = JSON.parse(event.data)
@@ -791,7 +792,7 @@ export const createRoom = (data) => async (dispatch) => {
     //console.log(data)
     try {  
         let result = await axios.post(`${API_URL}/rooms`, data);
-        console.log(result.data);
+        //console.log(result.data);
 
         dispatch({type: ADD_NEW_ROOM, room: result.data.room, token: result.data.token})
     } catch(e){
@@ -833,6 +834,19 @@ export const requestGameOver = () => async (dispatch, getState) => {
     dispatch({type: END_TURN})
 }
 
+export const checkSocket = () => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    const game = getState().lobbyReducer.game
+    const winPopup = getState().lobbyReducer.winPopup
+
+    // If in a lobby/started game and socket is closed/closing
+    if(game && !winPopup && socket.readyState !== 1 && socket.readyState !== 0) {
+        console.log("<<<Attempting to reconnect to webserver>>>")
+        let {id, name, password, token} = getState().lobbyReducer.socketParams
+        dispatch(joinRoom({id, name, password, token}))
+    }
+}
+
 export const handleMovement = ({movement, id, doubles, onlyMove}) => async (dispatch, getState) => {
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)
     const doubleState = getState().lobbyReducer.doubles
@@ -864,7 +878,6 @@ const handleFees = ({id}) => async (dispatch, getState) => {
 }
 
 export const turnLogic = ({movement, id, destination, doubles}) => async (dispatch, getState) => {
-    console.log("Inside turn logic", movement, id, destination, doubles)
     dispatch({type: HIDE_DICE})
     //const socket = getState().lobbyReducer.socket
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)

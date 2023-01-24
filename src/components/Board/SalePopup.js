@@ -38,7 +38,9 @@ export default function SalePopup(props){
                     </div>
                     <div style={{padding: '13px'}} className={classes.box}>
                         <div className={classes.colorBox} style={{backgroundColor: getColor(props.property)}}>{property.name}</div>
-                        <p className={classes.rent} style={{marginBottom: '8px', marginTop: '13px'}}>Rent: ${property.rent}</p>
+                        <p className={classes.rent} style={{marginBottom: '8px', marginTop: '13px'}}>
+                            Rent: {property.utility === false && "$"}{property.rent}
+                        </p>
                         {property.railroad === false && property.utility === false && <div>
                             <div className={classes.detailBox}> 
                                 <p className={classes.rent} style={{fontSize: '16px'}}>With 1 Dorm</p>
