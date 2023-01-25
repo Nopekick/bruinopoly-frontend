@@ -679,7 +679,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
     })
 
     socket.addEventListener('close',(e) => {
-        // console.log("Websocket server connection closed")
+        console.log("Websocket server connection closed")
     })
 
 

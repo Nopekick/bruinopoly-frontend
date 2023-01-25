@@ -15,9 +15,9 @@ export default function PropertyPopup(){
         dispatch({type: "CLOSE_DORM"})
     }
     
-    useEffect(()=>{
-        console.log("properties has changed", properties[6].dormCount)
-    }, properties)
+    // useEffect(()=>{
+    //     console.log("properties has changed", properties)
+    // }, [properties])
 
     let handleDormTransaction = (propertyNum) => {
         if(thisPopup.buy === true && properties[propertyNum].dormCount < 5 && me.money > PROPERTIES[propertyNum].dormCost 
@@ -45,7 +45,7 @@ export default function PropertyPopup(){
                     {me.propertiesOwned.filter(p => properties[p].isMortgaged === false).map((p, i)=>{
                         if(ownAll(p, me.propertiesOwned)){
                             return <div className={classes.wholeBox} key={i}>
-                                <div key={i} className={classes.propertyBox}>
+                                <div className={classes.propertyBox}>
                                     <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                     <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 </div>
