@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux'
 import {turnLogic, requestGameOver, handleEndTurn} from '../../reducers/lobby'
+import {differenceInSeconds} from 'date-fns'
 import { makeStyles } from '@material-ui/core/styles';
 import { positions, sleep, CHEST, CHANCE } from '../../config'
 import B from '../../assets/B.png';
@@ -32,7 +33,7 @@ export default function Board(props){
             {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup]} chance={true} name={props.name}/>}
             {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
             {props.turn && !hideDice && <DiceBox />}
-            {endTurnInProgress && <EndTurnAlerter />}
+            {endTurnInProgress && <EndTurnAlerter date={endTurnInProgress} />}
 
             <img draggable="false" alt="bruinopoly text" className={classes.Bruinopoly} src={Bruinopoly} />
             <img draggable="false" alt="B" className={classes.B} src={B} />
@@ -68,8 +69,8 @@ export default function Board(props){
 
 }
 
-function EndTurnAlerter() {
-    const [timeToEnd, changeTimeToEnd] = useState(60)
+function EndTurnAlerter(props) {
+    const [timeToEnd, changeTimeToEnd] = useState(60 - differenceInSeconds(new Date(), new Date(props.date)))
     const dispatch = useDispatch()
     const classes = turnStyles();
 
@@ -80,7 +81,7 @@ function EndTurnAlerter() {
         const timeout = setTimeout(()=>{
             clearInterval(interval)
             dispatch(handleEndTurn())
-        }, 30000)
+        }, timeToEnd*1000)
 
         return () => {
             clearInterval(interval)
@@ -137,7 +138,7 @@ function DiceBox() {
         let movement = leftDice + rightDice
         let destination = (players.filter(p => p._id === user.id)[0].currentTile + movement) % 40
 
-        // dispatch(handleMovement())
+        await sleep(1)
         dispatch(turnLogic({movement, id: user.id, destination, doubles: leftDice === rightDice}))
     }
 

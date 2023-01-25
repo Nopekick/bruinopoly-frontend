@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux'
 import {PROPERTIES, getColor} from '../../config';
 
-export default function PropertyPopup(props){
+export default function PropertyPopup(){
     const player = useSelector(state => state.lobbyReducer.userInfo)
     const thisPopup = useSelector(state => state.lobbyReducer.propertyPopup)
     const properties = useSelector(state => state.lobbyReducer.game.properties)
@@ -15,9 +15,9 @@ export default function PropertyPopup(props){
         dispatch({type: "CLOSE_DORM"})
     }
     
-    useEffect(()=>{
-        console.log("properties has changed", properties[6].dormCount)
-    }, properties)
+    // useEffect(()=>{
+    //     console.log("properties has changed", properties)
+    // }, [properties])
 
     let handleDormTransaction = (propertyNum) => {
         if(thisPopup.buy === true && properties[propertyNum].dormCount < 5 && me.money > PROPERTIES[propertyNum].dormCost 
@@ -26,6 +26,7 @@ export default function PropertyPopup(props){
             dispatch({type: "BUY_DORM", propertyId: propertyNum, playerId: player.id, send: true})
         } else if(thisPopup.sell === true && properties[propertyNum].dormCount > 0 
             && checkProposedDormTransaction(properties[propertyNum].dormCount - 1, propertyNum, properties)){
+
             dispatch({type: "SELL_DORM", propertyId: propertyNum, playerId: player.id, send: true})
         }
     }
@@ -44,7 +45,7 @@ export default function PropertyPopup(props){
                     {me.propertiesOwned.filter(p => properties[p].isMortgaged === false).map((p, i)=>{
                         if(ownAll(p, me.propertiesOwned)){
                             return <div className={classes.wholeBox} key={i}>
-                                <div key={i} className={classes.propertyBox}>
+                                <div className={classes.propertyBox}>
                                     <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                     <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 </div>

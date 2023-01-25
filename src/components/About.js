@@ -24,7 +24,6 @@ export default function About(props){
                 </div>
                 <div className={classes.text}>IMPORTANT (Read this)
                     <ul>
-                        <li>Don't reload the page while in a game. It will close the server connection and make the game unplayable.</li>
                         <li>Various bugs may cause the game to be unplayable. In order to reset the website, open the Javascript console (option-command-J on Macs) and 
                             type in 'localStorage.clear()', then press 'Enter'. You should be taken back to the welcome page.</li>
                     </ul> 
@@ -35,7 +34,6 @@ export default function About(props){
                         <li>Notification of duplicates overlaps with drawn card</li>
                         <li>No handling of bankrupty: money can go negative</li>
                         <li>No handling of players leaving a game once it has started</li>
-                        <li>During a game, websocket connection to server may close for someone, leaving game unplayable for all</li>
                     </ul> 
                 </div>
             </div>

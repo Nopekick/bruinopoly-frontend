@@ -145,7 +145,7 @@ export default function TradePopup(props){
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
-                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
+                                {properties[p].isMortgaged && <img src={mortgage} alt="mortgage" className={classes.mortgage}/>}
                             </div>
                         })}
                         {trade.receive && trade.propertiesIncoming.map((p,i)=>{
@@ -154,7 +154,7 @@ export default function TradePopup(props){
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
-                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
+                                {properties[p].isMortgaged && <img src={mortgage} alt="mortgage" className={classes.mortgage}/>}
                             </div>
                         })}
                         </div>
@@ -182,7 +182,7 @@ export default function TradePopup(props){
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
-                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
+                                {properties[p].isMortgaged && <img src={mortgage} alt="mortgage" className={classes.mortgage}/>}
                             </div>
                         })}
                         {trade.receive && trade.propertiesOutgoing.map((p,i)=>{
@@ -191,7 +191,7 @@ export default function TradePopup(props){
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 <p className={classes.text}>${PROPERTIES[p].price}</p>
-                                {properties[p].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
+                                {properties[p].isMortgaged && <img src={mortgage} alt="mortgage" className={classes.mortgage}/>}
                             </div>
                         })}
                         </div>

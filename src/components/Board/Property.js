@@ -66,9 +66,9 @@ export default function Property(props){
                 }
             </div>}
             <div className={classes.name}>{props.name.toUpperCase()}</div>
-            {properties[props.id].isMortgaged && <img src={mortgage} className={classes.mortgage}/>}
-            {props.icon !== null && <img src={props.icon} style={{width: props.small ? '35px' : '90%', marginBottom: props.padding ? '20px': null}} className={classes.icon}/>}
-            {props.price !== null && <div className={classes.price}>{props.price}</div>}
+            {properties[props.id].isMortgaged && <img src={mortgage} alt="mortgage" className={classes.mortgage}/>}
+            {props.icon && <img src={props.icon} alt="corner icon" style={{width: props.small ? '35px' : '90%', marginBottom: props.padding ? '20px': null}} className={classes.icon}/>}
+            {props.price && <div className={classes.price}>{props.price}</div>}
             {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id).map((player, i)=>{
                 return <PlayerToken key={i} color={playerDetails[playerMap[player._id]].color} left={propertyPos[i].left} top={propertyPos[i].top} 
                     img={playerDetails[playerMap[player._id]].img}  />
