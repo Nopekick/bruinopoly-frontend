@@ -130,18 +130,21 @@ export function lobbyReducer(state = initialState, action) {
         case BUY_ALL_PROPERTIES:
             if(state.yourTurn === false) return
             let arr = [6,8,9]
+            let propertyCost = 0
+            const bonus = 15000
+            arr.forEach((i) => {propertyCost += PROPERTIES[i].price})
 
             if(state.socket !== null){
-                state.socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: state.userInfo.id, moneyChange: 10000}] ]))
+                state.socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: state.userInfo.id, moneyChange: bonus}] ]))
                 arr.forEach(async (num)=>{
-                    await sleep(.5)
+                    await sleep(.3)
                     state.socket.send(JSON.stringify(['game-events', [{type: 'PURCHASE_PROPERTY', playerId: state.userInfo.id, propertyId: num}]]))
                 })
             }      
            //["1", "3", "5", "6", "8", "9", "11", "12", "13", "14", "15", "16", "18", "19", "21", "23", "24", "25", "26", "27", "28", "29", "31", "33", "34", "35", "37", "39"]
             return {...state, game: {...state.game, players: state.game.players.map((p)=>{
                 if(p._id === state.userInfo.id){
-                    return {...p, money: 100000, propertiesOwned: arr}
+                    return {...p, money: p.money + bonus - propertyCost, propertiesOwned: arr}
                 } else {
                     return p
                 }
@@ -550,11 +553,11 @@ export function lobbyReducer(state = initialState, action) {
                 return {...state}
             }
         case DRAW_CHANCE:
-            return {...state, chancePopup: state.game.chanceDeck.currentCardIndex, 
-                game: {...state.game, chanceDeck: {...state.game.chanceDeck, currentCardIndex: (state.game.chanceDeck.currentCardIndex + 1)%14}}}
+            return {...state, chancePopup: {index: state.game.chanceDeck.deck[state.game.chanceDeck.currentCardIndex], playerId: action.id}, 
+                game: {...state.game, chanceDeck: {...state.game.chanceDeck, currentCardIndex: (state.game.chanceDeck.currentCardIndex + 1) % CHANCE.length}}}
         case DRAW_CHEST:
-           return {...state, chestPopup: state.game.communityChestDeck.currentCardIndex, 
-                game: {...state.game, communityChestDeck: {...state.game.communityChestDeck, currentCardIndex: (state.game.communityChestDeck.currentCardIndex + 1)%13}}}
+           return {...state, chestPopup: {index: state.game.communityChestDeck.deck[state.game.communityChestDeck.currentCardIndex], playerId: action.id}, 
+                game: {...state.game, communityChestDeck: {...state.game.communityChestDeck, currentCardIndex: (state.game.communityChestDeck.currentCardIndex + 1) % CHEST.length}}}
         case CLOSE_CARDS:
             if(state.doubles === null)
                 return {...state, chancePopup: null, chestPopup: null}
@@ -786,9 +789,9 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                         break;
                     case "CARD_DRAW":
                         if(event.deck === "CHEST") {
-                            dispatch({type: DRAW_CHEST})
+                            dispatch({type: DRAW_CHEST, id: event.playerId})
                         } else if(event.deck === "CHANCE") {
-                            dispatch({type: DRAW_CHANCE})
+                            dispatch({type: DRAW_CHANCE, id: event.playerId})
                         }
                         break;
                     case "MOVEMENT":
@@ -915,22 +918,23 @@ export const handleMoveBackwards = ({playerId, tile}) => async (dispatch, getSta
     }
 }
 
-export const handleCardDraw = (deck, id, movement) => async (dispatch, getState) => {
+export const handleCardDraw = (deckName, id, movement) => async (dispatch, getState) => {
     const socket = getState().lobbyReducer.socket
-    const index = deck === "CHANCE" ? getState().lobbyReducer.game.chanceDeck.currentCardIndex : getState().lobbyReducer.game.communityChestDeck.currentCardIndex
+    const index = deckName === "CHANCE" ? getState().lobbyReducer.game.chanceDeck.currentCardIndex : getState().lobbyReducer.game.communityChestDeck.currentCardIndex
+    const deck = deckName === "CHANCE" ? getState().lobbyReducer.game.chanceDeck.deck : getState().lobbyReducer.game.communityChestDeck.deck
 
-    if(deck === "CHANCE") {
+    if(deckName === "CHANCE") {
         if(socket !== null)
             socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHANCE", playerId: id, cardIndex: index}] ]))
 
-        dispatch({type: DRAW_CHANCE})
-        await dispatch(CHANCE[index].effect(id, movement))
-    } else if(deck === "CHEST") {
+        dispatch({type: DRAW_CHANCE, id})
+        await dispatch(CHANCE[deck[index]].effect(id, movement))
+    } else if(deckName === "CHEST") {
         if(socket !== null)
             socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHEST", playerId: id, cardIndex: index}] ]))
 
-        dispatch({type: DRAW_CHEST})
-        await dispatch(CHEST[index].effect(id, movement))
+        dispatch({type: DRAW_CHEST, id})
+        await dispatch(CHEST[deck[index]].effect(id, movement))
     }
 }
 
@@ -973,7 +977,7 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     await dispatch(handleMovement({movement, id, doubles, onlyMove: false}))
 
     //NEEDS CHANGES: ADD END TURN TO END OF PROPERTY_DECISION, CARD DRAWING, FEE PAYING
-    if((player.turnsInJail !== 0 && doubles == false) ||
+    if((player.turnsInJail !== 0 && doubles === false) ||
         (player.turnsInJail === 0 && doubleState && doubleState.number === 2 && doubles === true)) {
         //do nothing if in jail and didn't roll doubles
         //also do nothing if not in jail, rolled 3 consecutive doulbes

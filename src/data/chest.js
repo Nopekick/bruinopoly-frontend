@@ -1,4 +1,3 @@
-import { batch } from 'react-redux'
 import { handleAdvance } from '../reducers/lobby';
 /**
  * interface ChestCard {
@@ -40,11 +39,13 @@ const CHEST = [
           const socket = getState().lobbyReducer.socket
 
           if(socket !== null) {
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 0}] ]))
-            socket.send(JSON.stringify(['game-events', [{type: 'GO_TO_JAIL_NO_MOVE', playerId}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 10}] ]))
           }
             
           await dispatch(handleAdvance({tile: 10, playerId}))
+          if(socket !== null) {
+            socket.send(JSON.stringify(['game-events', [{type: 'GO_TO_JAIL_NO_MOVE', playerId}] ]))
+          }
           dispatch({type: "GO_TO_JAIL_NO_MOVE", playerId})
         }
       }

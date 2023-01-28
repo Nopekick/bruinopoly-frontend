@@ -1,4 +1,4 @@
-import React, { useEffect, useRef} from 'react';
+import React, { useEffect, useRef, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux'
 
@@ -6,10 +6,10 @@ export default function CardPopup(props){
     const classes = useStyles();
     const wrapperRef = useRef(null);
     const dispatch = useDispatch()
+    const [name, setName] = useState("")
     useOutsideAlerter(wrapperRef);
 
     useEffect(() => {
-        //C
         const timeout = setTimeout(() => {
             if(props.chest) {
                 dispatch({type: "CLOSE_CHEST"})
@@ -29,9 +29,13 @@ export default function CardPopup(props){
         <div  style={{width: '100%', height: '100%'}}>
             <div className={classes.shadow}></div>
             <div ref={wrapperRef} className={classes.container} style={{backgroundColor: props.chance ? "#F5D34D" : (props.chest ? "#A8DDD7" : "#7A6E5D")}}>
-                <p className={classes.titleText}>{props.chance ? "EXCUSE ME SIR" : (props.chest ? "FINANCIAL AID OFFICE" : (props.doubles && props.doubles.number === 3 ? "GO TO MURPHY" : "ROLL AGAIN!"))}</p>
+                <p className={classes.titleText}>
+                    {props.chance ? "EXCUSE ME SIR" : (props.chest ? "FINANCIAL AID OFFICE" : (props.doubles && props.doubles.number === 3 ? "GO TO MURPHY" : "ROLL AGAIN!"))}
+                </p>
                 <div className={classes.subBox}>
-                    <p className={classes.innerText} style={{color: '#433F36', marginBottom: '12px'}}>{props.name}</p>
+                    <p className={classes.innerText} style={{color: '#433F36', marginBottom: '12px'}}>
+                       {props.name}
+                    </p>
                     <p className={classes.innerText} style={{color: '#7A6E5D'}}>{props.info ? props.info.text.toUpperCase() : doubleText}</p>
                 </div>
             </div>
