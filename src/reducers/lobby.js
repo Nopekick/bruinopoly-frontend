@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, TILES, CHANCE, CHEST} from '../config';
+import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, 
+    TILES, CHANCE, CHEST, getAssetWealth} from '../config';
 
 
 const SET_USER_INFO = "SET_USER_INFO"
@@ -347,7 +348,8 @@ export function lobbyReducer(state = initialState, action) {
                 else return {...player, turnsInJail: 3}
             })}} 
         case OPEN_TRADE:
-            if(state.game.players.length > 1 && state.yourTurn === true)
+            let thisPlayer = state.game.players.find(p => p._id === state.userInfo.id)
+            if(state.game.players.length > 1 && state.yourTurn === true && !thisPlayer.isBankrupt)
                 return {...state, tradePopup: {receive: false}}
             else return {...state}
         case OFFER_TRADE:
@@ -679,8 +681,8 @@ export function lobbyReducer(state = initialState, action) {
         case ALL_TRANSFER_MONEY_TO:
             return {...state, game: {...state.game, players: state.game.players.map((p)=>{
                 if(p._id === action.playerId) 
-                    return {...p, money: p.money + action.transferAmount * (state.game.players.length - 1)}
-                else 
+                    return {...p, money: p.money + action.transferAmount * (nonBankruptCount(state.game.players) - 1)}
+                else if(!p.isBankrupt)
                     return {...p, money: p.money - action.transferAmount}
             })}}
         case GAME_OVER:
@@ -693,7 +695,7 @@ export function lobbyReducer(state = initialState, action) {
     }
 }
 
-export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
+export const joinRoom = ({id, name, password, token}) => async (dispatch, getState) => {
     //console.log(id, name, password)
     let socket;
     try {
@@ -743,12 +745,17 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                 dispatch({type: START_GAME, game: data[1].game})
                 break;
             case 'game-over':
-                console.log("The winner has id:",data[1].winner)
+                //console.log("The winner has id:",data[1].winner)
                 dispatch({type: GAME_OVER, winner: data[1].winner, maxWealth: data[1].maxWealth})
-                //dispatch event to close socket connection, display winner popup with button to leave game
                 break;
             case 'your-turn':
-                dispatch({type: START_TURN})
+                const id = getState().lobbyReducer.userInfo.id
+                const player = getState().lobbyReducer.game.players.find(p => p._id === id)
+                if(player.money < 0) {
+                    dispatch(handleBankruptcy())
+                } else {
+                    dispatch({type: START_TURN})
+                }
                 break;
             case 'player-turn':
                 dispatch({type: SET_TURN, id: data[1].id})
@@ -918,6 +925,10 @@ export const handleMoveBackwards = ({playerId, tile}) => async (dispatch, getSta
     }
 }
 
+const handleBankruptcy = () => async (dispatch, getState) => {
+
+}
+
 export const handleCardDraw = (deckName, id, movement) => async (dispatch, getState) => {
     const socket = getState().lobbyReducer.socket
     const index = deckName === "CHANCE" ? getState().lobbyReducer.game.chanceDeck.currentCardIndex : getState().lobbyReducer.game.communityChestDeck.currentCardIndex
@@ -1055,6 +1066,11 @@ export const setUserInfo = (info) => async (dispatch) => {
 
     dispatch({type: SET_USER_INFO, userObj: {...info, id: null}})
 };
+
+const nonBankruptCount = (players) => {
+    let nonBankrupt = players.filter(p => p.isBankrupt === false) 
+    return nonBankrupt.length 
+  }
 
 const ownAll = (propertyNum, ownedProperties) => {
     if(propertyNum === 1 && ownedProperties.includes(1) && ownedProperties.includes(3)){
