@@ -5,7 +5,23 @@ import { useDispatch } from 'react-redux'
 export default function CardPopup(props){
     const classes = useStyles();
     const wrapperRef = useRef(null);
+    const dispatch = useDispatch()
     useOutsideAlerter(wrapperRef);
+
+    useEffect(() => {
+        //C
+        const timeout = setTimeout(() => {
+            if(props.chest) {
+                dispatch({type: "CLOSE_CHEST"})
+            } else if(props.chance) {
+                dispatch({type: "CLOSE_CHANCE"})
+            } else if(props.doubles) {
+                dispatch({type: "CLOSE_DOUBLES"})
+            }
+        }, 5000)
+
+        return () => { clearTimeout(timeout) }
+    }, [])
 
     const doubleText = props.doubles && props.doubles.number === 3 ? "YOU ROLLED A DOUBLE THREE TIMES IN A ROW. GO TO MURPHY" : "YOU ROLLED A DOUBLE. ROLL AGAIN"
    
@@ -71,12 +87,12 @@ const useStyles = makeStyles(() => ({
     },
     innerText: {
         fontFamily: 'VCR',
-         fontSize: '25px',
-         fontWeight: 400,
-         margin: 'auto',
-         textAlign: 'center',
-         lineHeight: '34px',
-         maxWidth: '85%'
+        fontSize: '25px',
+        fontWeight: 400,
+        margin: 'auto',
+        textAlign: 'center',
+        lineHeight: '34px',
+        maxWidth: '90%'
     }
 }))
 
