@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import {turnLogic, requestGameOver, handleEndTurn} from '../../reducers/lobby'
 import {differenceInSeconds} from 'date-fns'
 import { makeStyles } from '@material-ui/core/styles';
-import { positions, sleep, CHEST, CHANCE } from '../../config'
+import { positions, sleep, CHEST, CHANCE, mapIdToName } from '../../config'
 import B from '../../assets/B.png';
 import Bruinopoly from '../../assets/bruinopoly.png';
 import FinAidCards from '../../assets/Financial_Aid_Cards.png';
@@ -19,6 +19,8 @@ import TradeResult from './TradeResult';
 export default function Board(props){
     const endTurnInProgress = useSelector(state => state.lobbyReducer.endTurnInProgress)
     const hideDice = useSelector(state => state.lobbyReducer.hideDice)
+    const players = useSelector(state => state.lobbyReducer.game.players)
+
     const classes = useStyles();
 
 
@@ -29,8 +31,10 @@ export default function Board(props){
             {props.propertyPopup && <PropertyPopup />}
             {props.tradePopup && !props.tradePopup.decision && <TradePopup />}
             {props.tradePopup && props.tradePopup.decision && <TradeResult />}
-            {props.chestPopup !== null && <CardPopup info={CHEST[props.chestPopup]} chest={true} name={props.name}/>}
-            {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup]} chance={true} name={props.name}/>}
+            {props.chestPopup !== null && <CardPopup info={CHEST[props.chestPopup.index]} id={props.chestPopup.playerId}
+                chest={true} name={mapIdToName(players, props.chestPopup.playerId)}/>}
+            {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup.index]} id={props.chancePopup.playerId} 
+                chance={true} name={mapIdToName(players, props.chancePopup.playerId)}/>}
             {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
             {props.turn && !hideDice && <DiceBox />}
             {endTurnInProgress && <EndTurnAlerter date={endTurnInProgress} />}

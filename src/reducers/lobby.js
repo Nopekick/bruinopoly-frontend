@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, TILES} from '../config';
+import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, TILES, CHANCE, CHEST} from '../config';
 
 
 const SET_USER_INFO = "SET_USER_INFO"
@@ -26,13 +26,18 @@ const ADD_MESSAGE = "ADD_MESSAGE"
 const SET_SOCKET = "SET_SOCKET"
 
 const MOVE_ONE = "MOVE_ONE"
+const MOVE_ONE_BACKWARDS = "MOVE_ONE_BACKWARDS"
 const MOVEMENT = "MOVEMENT"
+
 const PROPERTY_DECISION = "PROPERTY_DECISION"
 const CLOSE_PROPERTY = "CLOSE_PROPERTY"
 const ATTEMPT_BUY = "ATTEMPT_BUY"
 const HANDLE_CHANGE_MONEY = "HANDLE_CHANGE_MONEY"
+const ALL_TRANSFER_MONEY_TO = "ALL_TRANSFER_MONEY_TO"
 
+const GET_JAIL_CARD = "GET_JAIL_CARD"
 const GO_TO_JAIL = "GO_TO_JAIL"
+const GO_TO_JAIL_NO_MOVE = "GO_TO_JAIL_NO_MOVE"
 const USE_GET_OUT_OF_JAIL = "USE_GET_OUT_OF_JAIL"
 const GET_OUT_OF_JAIL_FREE = "GET_OUT_OF_JAIL_FREE"
 const JAIL_TURN = "JAIL_TURN"
@@ -62,6 +67,9 @@ const DOUBLES = "DOUBLES"
 const DRAW_CHANCE = "DRAW_CHANCE"
 const DRAW_CHEST = "DRAW_CHEST"
 const CLOSE_CARDS = "CLOSE_CARDS"
+const CLOSE_DOUBLES = "CLOSE_DOUBLES"
+const CLOSE_CHEST = "CLOSE_CHEST"
+const CLOSE_CHANCE = "CLOSE_CHANCE"
 
 //actions types to handle game-events from server
 const ADD_PROPERTY = "ADD_PROPERTY"
@@ -122,18 +130,21 @@ export function lobbyReducer(state = initialState, action) {
         case BUY_ALL_PROPERTIES:
             if(state.yourTurn === false) return
             let arr = [6,8,9]
+            let propertyCost = 0
+            const bonus = 15000
+            arr.forEach((i) => {propertyCost += PROPERTIES[i].price})
 
             if(state.socket !== null){
-                state.socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: state.userInfo.id, moneyChange: 10000}] ]))
+                state.socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: state.userInfo.id, moneyChange: bonus}] ]))
                 arr.forEach(async (num)=>{
-                    await sleep(.5)
+                    await sleep(.3)
                     state.socket.send(JSON.stringify(['game-events', [{type: 'PURCHASE_PROPERTY', playerId: state.userInfo.id, propertyId: num}]]))
                 })
             }      
            //["1", "3", "5", "6", "8", "9", "11", "12", "13", "14", "15", "16", "18", "19", "21", "23", "24", "25", "26", "27", "28", "29", "31", "33", "34", "35", "37", "39"]
             return {...state, game: {...state.game, players: state.game.players.map((p)=>{
                 if(p._id === state.userInfo.id){
-                    return {...p, money: 100000, propertiesOwned: arr}
+                    return {...p, money: p.money + bonus - propertyCost, propertiesOwned: arr}
                 } else {
                     return p
                 }
@@ -224,8 +235,20 @@ export function lobbyReducer(state = initialState, action) {
             if(p1.turnsInJail === 0)
                 return {...state, game: {...state.game, players: state.game.players.map((player)=>{
                     if(player._id !== action.id) return player
-                    else if((player.currentTile + 1)%40 === 0) return {...player, currentTile: (player.currentTile + 1)%40, money: player.money + 200} //pass GO, get $200
+                    else if((player.currentTile + 1)%40 === 0) return {...player, currentTile: 0, money: player.money + 200} //pass GO, get $200
                     else return {...player, currentTile: (player.currentTile + 1)%40}
+                })}}
+
+            return {...state}
+        case MOVE_ONE_BACKWARDS:
+            let p9 = state.game.players.filter(p => p._id === action.id)[0]
+
+            if(p9.turnsInJail === 0)
+                return {...state, game: {...state.game, players: state.game.players.map((player)=>{
+                    if(player._id !== action.id) return player
+                    else if(player.currentTile === 1) return {...player, currentTile: 0, money: player.money + 200} //pass GO, get $200
+                    else if(player.currentTile === 0) return {...player, currentTile: 39}
+                    else return {...player, currentTile: player.currentTile - 1}
                 })}}
 
             return {...state}
@@ -287,6 +310,8 @@ export function lobbyReducer(state = initialState, action) {
             return {...state, jailPopup: true}
         case CLOSE_JAIL_POPUP:
             return {...state, jailPopup: null}
+        case GET_JAIL_CARD:
+            return {...state, jailCards: Math.min(2, state.jailCards + 1)}
         case USE_GET_OUT_OF_JAIL:
             if(state.socket !== null){
                 state.socket.send(JSON.stringify(['game-events', [{type: 'GET_OUT_OF_JAIL_FREE', playerId: state.userInfo.id}] ]))
@@ -315,6 +340,11 @@ export function lobbyReducer(state = initialState, action) {
             return {...state, game: {...state.game, players: state.game.players.map((player)=>{
                 if(player._id !== action.id) return player
                 else return {...player, currentTile: 10, turnsInJail: 3}
+            })}} 
+        case GO_TO_JAIL_NO_MOVE:
+            return {...state, game: {...state.game, players: state.game.players.map((player)=>{
+                if(player._id !== action.playerId) return player
+                else return {...player, turnsInJail: 3}
             })}} 
         case OPEN_TRADE:
             if(state.game.players.length > 1 && state.yourTurn === true)
@@ -447,7 +477,7 @@ export function lobbyReducer(state = initialState, action) {
                 let rent = 0; 
                 if(property.utility === true){
                     //UTILITY RENT
-                    if(ownAll(action.id, ownedProperties)){
+                    if(ownAll(action.id, ownedProperties) || action.utilityPayMax){
                         rent = action.movement * 10;
                     } else {
                         rent = action.movement * 4;
@@ -523,28 +553,22 @@ export function lobbyReducer(state = initialState, action) {
                 return {...state}
             }
         case DRAW_CHANCE:
-            let p4 = state.game.players.filter(p => p._id === state.userInfo.id)[0]
-            if(p4.turnsInJail !== 0) return {...state}
-
-            if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHANCE", playerId: state.userInfo.id, cardIndex: state.game.chanceDeck.currentCardIndex}] ]))
-
-            return {...state, chancePopup: state.game.chanceDeck.currentCardIndex, 
-                game: {...state.game, chanceDeck: {...state.game.chanceDeck, currentCardIndex: (state.game.chanceDeck.currentCardIndex + 1)%14}}}
+            return {...state, chancePopup: {index: state.game.chanceDeck.deck[state.game.chanceDeck.currentCardIndex], playerId: action.id}, 
+                game: {...state.game, chanceDeck: {...state.game.chanceDeck, currentCardIndex: (state.game.chanceDeck.currentCardIndex + 1) % CHANCE.length}}}
         case DRAW_CHEST:
-            let p5 = state.game.players.filter(p => p._id === state.userInfo.id)[0]
-            if(p5.turnsInJail !== 0) return {...state}
-
-            if(state.socket !== null)
-                state.socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "COMMUNITY_CHEST", playerId: state.userInfo.id, cardIndex: state.game.communityChestDeck.currentCardIndex}] ]))
-
-            return {...state, chestPopup: state.game.communityChestDeck.currentCardIndex, 
-                game: {...state.game, communityChestDeck: {...state.game.communityChestDeck, currentCardIndex: (state.game.communityChestDeck.currentCardIndex + 1)%13}}}
+           return {...state, chestPopup: {index: state.game.communityChestDeck.deck[state.game.communityChestDeck.currentCardIndex], playerId: action.id}, 
+                game: {...state.game, communityChestDeck: {...state.game.communityChestDeck, currentCardIndex: (state.game.communityChestDeck.currentCardIndex + 1) % CHEST.length}}}
         case CLOSE_CARDS:
             if(state.doubles === null)
                 return {...state, chancePopup: null, chestPopup: null}
             else 
                 return {...state, chancePopup: null, chestPopup: null, doubles: {...state.doubles, show: false}}
+        case CLOSE_DOUBLES:
+            return {...state, doubles: {...state.doubles, show: false}}
+        case CLOSE_CHEST:
+            return {...state, chestPopup: null}
+        case CLOSE_CHANCE:
+            return {...state, chancePopup: null}
         case HIDE_DICE:
             return {...state, hideDice: true}
         case ADD_PROPERTY:
@@ -652,6 +676,13 @@ export function lobbyReducer(state = initialState, action) {
                 else 
                     return p
             })}}
+        case ALL_TRANSFER_MONEY_TO:
+            return {...state, game: {...state.game, players: state.game.players.map((p)=>{
+                if(p._id === action.playerId) 
+                    return {...p, money: p.money + action.transferAmount * (state.game.players.length - 1)}
+                else 
+                    return {...p, money: p.money - action.transferAmount}
+            })}}
         case GAME_OVER:
             // make other popups false?
             if(state.socket !== null)
@@ -741,8 +772,14 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                     case "CHANGE_MONEY":
                         dispatch({type: HANDLE_CHANGE_MONEY, playerId: event.playerId, money: event.moneyChange})
                         break;
+                    case "ALL_TRANSFER_MONEY_TO":
+                        dispatch({type: ALL_TRANSFER_MONEY_TO, playerId: event.playerId, transferAmount: event.transferAmount});
+                        break;
                     case "GO_TO_JAIL":
                         dispatch({type: GO_TO_JAIL, id: event.playerId, tellServer: false})
+                        break;
+                    case "GO_TO_JAIL_NO_MOVE":
+                        dispatch({type: GO_TO_JAIL_NO_MOVE, playerId: event.playerId})
                         break;
                     case "GET_OUT_OF_JAIL_FREE":
                         dispatch({type: GET_OUT_OF_JAIL_FREE, id: event.playerId})
@@ -750,8 +787,21 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                     case "JAIL_TURN":
                         dispatch({type: JAIL_TURN, id: event.playerId})
                         break;
+                    case "CARD_DRAW":
+                        if(event.deck === "CHEST") {
+                            dispatch({type: DRAW_CHEST, id: event.playerId})
+                        } else if(event.deck === "CHANCE") {
+                            dispatch({type: DRAW_CHANCE, id: event.playerId})
+                        }
+                        break;
                     case "MOVEMENT":
                         dispatch(handleMovement({movement: event.numTiles, id: event.playerId, doubles: false, onlyMove: true}))
+                        break;
+                    case "ADVANCE":
+                        dispatch(handleAdvance({playerId: event.playerId, tile: event.tile}))
+                        break;
+                    case "MOVE_BACKWARDS":
+                        dispatch(handleMoveBackwards({playerId: event.playerId, tile: event.tile}))
                         break;
                     case "PURCHASE_PROPERTY":
                         dispatch({type: ADD_PROPERTY, playerId: event.playerId, property: PROPERTIES[parseInt(event.propertyId)]})
@@ -759,8 +809,8 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                     case "OFFER_TRADE":
                         //ignore, needs to be 'offered-trade' event
                         break;
-                        dispatch({type: RECEIVE_TRADE, obj: {...event} })
-                        break;
+                        // dispatch({type: RECEIVE_TRADE, obj: {...event} })
+                        // break;
                     case "ACCEPT_TRADE":
                         dispatch({type: HANDLE_ACCEPT_TRADE, obj: {...event} })
                         break;
@@ -848,6 +898,46 @@ export const checkSocket = () => async (dispatch, getState) => {
     }
 }
 
+export const handleAdvance = ({playerId, tile}) => async (dispatch, getState) => {
+    const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
+    const tilesToMove = tile > player.currentTile ? (tile - player.currentTile) : (40 - player.currentTile + tile)
+
+    for(let i = 0; i < tilesToMove; i++){
+        dispatch({type: MOVE_ONE, id: playerId, doubles: false})
+        await sleep(.7)
+    }
+}
+
+export const handleMoveBackwards = ({playerId, tile}) => async (dispatch, getState) => {
+    const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
+    const tilesToMove = tile < player.currentTile ? (player.currentTile - tile) : (40 + player.currentTile - tile)
+
+    for(let i = 0; i < tilesToMove; i++){
+        dispatch({type: MOVE_ONE_BACKWARDS, id: playerId, doubles: false})
+        await sleep(.7)
+    }
+}
+
+export const handleCardDraw = (deckName, id, movement) => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    const index = deckName === "CHANCE" ? getState().lobbyReducer.game.chanceDeck.currentCardIndex : getState().lobbyReducer.game.communityChestDeck.currentCardIndex
+    const deck = deckName === "CHANCE" ? getState().lobbyReducer.game.chanceDeck.deck : getState().lobbyReducer.game.communityChestDeck.deck
+
+    if(deckName === "CHANCE") {
+        if(socket !== null)
+            socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHANCE", playerId: id, cardIndex: index}] ]))
+
+        dispatch({type: DRAW_CHANCE, id})
+        await dispatch(CHANCE[deck[index]].effect(id, movement))
+    } else if(deckName === "CHEST") {
+        if(socket !== null)
+            socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHEST", playerId: id, cardIndex: index}] ]))
+
+        dispatch({type: DRAW_CHEST, id})
+        await dispatch(CHEST[deck[index]].effect(id, movement))
+    }
+}
+
 export const handleMovement = ({movement, id, doubles, onlyMove}) => async (dispatch, getState) => {
     const player = getState().lobbyReducer.game.players.find(p => p._id === id)
     const doubleState = getState().lobbyReducer.doubles
@@ -866,11 +956,11 @@ export const handleMovement = ({movement, id, doubles, onlyMove}) => async (disp
 
     for(let i = 0; i < movement; i++){
         dispatch({type: MOVE_ONE, id, doubles})
-        await sleep(1)
+        await sleep(0.7)
     }
 }
 
-const handleFees = ({id}) => async (dispatch, getState) => {
+export const handleFees = ({id}) => async (dispatch, getState) => {
     const socket = getState().lobbyReducer.socket
     if(socket !== null)
         socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: id, moneyChange: -200}] ]))
@@ -887,7 +977,7 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     await dispatch(handleMovement({movement, id, doubles, onlyMove: false}))
 
     //NEEDS CHANGES: ADD END TURN TO END OF PROPERTY_DECISION, CARD DRAWING, FEE PAYING
-    if((player.turnsInJail !== 0 && doubles == false) ||
+    if((player.turnsInJail !== 0 && doubles === false) ||
         (player.turnsInJail === 0 && doubleState && doubleState.number === 2 && doubles === true)) {
         //do nothing if in jail and didn't roll doubles
         //also do nothing if not in jail, rolled 3 consecutive doulbes
@@ -895,9 +985,9 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     else if(TILES[destination].type === TileType.PROPERTY){
         dispatch({type: PROPERTY_DECISION, id: destination, movement})
     } else if(TILES[destination].type === TileType.CHANCE){
-        dispatch({type: DRAW_CHANCE})
+        dispatch(handleCardDraw("CHANCE", id, movement))
     } else if(TILES[destination].type === TileType.CHEST){
-        dispatch({type: DRAW_CHEST})
+        dispatch(handleCardDraw("CHEST", id, movement))
     } else if(TILES[destination].type === TileType.FEES){
         dispatch(handleFees({id}))
     } else {

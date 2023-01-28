@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
 import { mapIdToName, ENV } from '../config';
-import { checkSocket } from '../reducers/lobby';
+import { checkSocket, handleCardDraw } from '../reducers/lobby';
 
 import Board from '../containers/Board';
 import Sidebar from './Sidebar';
@@ -62,6 +62,8 @@ export default function GameScreen(props){
             {props.winPopup && <WinPopup winner={props.winPopup}/>}
             <div className={classes.topBar}>
                 {ENV !== "PROD" && <p className={classes.testingLeave} onClick={handleLeave}>Leave Lobby (Testing)</p>}
+                {ENV === "LOCAL" && props.game.hasStarted && <button className={classes.drawButton} onClick={()=>{dispatch(handleCardDraw("CHEST", props.user.id, 2))}}>Draw Chest</button>}
+                {ENV === "LOCAL" && props.game.hasStarted && <button className={classes.drawButton} onClick={()=>{dispatch(handleCardDraw("CHANCE", props.user.id, 2))}}>Draw Chance</button>}
                 {props.game.hasStarted && props.game.currentTurn && <p className={classes.currentTurn}>Current Turn: {mapIdToName(props.game.players, props.game.currentTurn)}</p>}
             </div>
             <Sidebar user={props.user} started={props.game.hasStarted} game={props.game} players={props.players}/>
@@ -140,6 +142,24 @@ const useStyles = makeStyles(() => ({
         outline: 'none',
         cursor: 'pointer',
         marginTop: '20px'
+    },
+    drawButton: {
+        color: 'white',
+        width: '180px',
+        padding: '5px',
+        backgroundColor: '#7A6E5D',
+        borderRadius: '9px',
+        fontSize: '20px',
+        textShadow: '2px 2px 0px rgba(0, 0, 0, 0.25)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'ChelseaMarket',
+        border: 'none',
+        outline: 'none',
+        cursor: 'pointer',
+        display: 'inline-block',
+        marginLeft: '20px'
     },
     topBar: {
         height: '52px',
