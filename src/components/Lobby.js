@@ -8,6 +8,7 @@ import blob1 from '../assets/blob1.png'
 import blob2 from '../assets/blob2.png'
 import dropdown from '../assets/dropdown.png'
 import {minGameTime, ENV } from '../config'
+import ErrorPopup from './ErrorPopup.js';
 
 export default function Lobby(props){
     const classes = useStyles();
@@ -89,6 +90,7 @@ export default function Lobby(props){
     
     return (
         <div className={classes.wrapper}>
+        {props.error && <ErrorPopup message={props.error} />}
         {showPasswordAttempt && <div className={classes.blur}><div className={classes.createRoomPopup} style={{height: '150px', width: '400px'}}>
             <form style={{margin: 0, padding: 0, marginTop: '50px', marginLeft: '50px'}} onSubmit={handlePasswordJoin}>
                 <input style={{width: '80%', height: '45px'}} className={classes.roomInput} placeholder="ROOM PASSWORD..." value={passwordJoin} 

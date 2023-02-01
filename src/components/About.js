@@ -18,14 +18,14 @@ export default function About(props){
                 <div className={classes.roomsText} style={{backgroundColor: '#A8DDD7', cursor: 'pointer'}} onClick={()=> props.history.push("/")}><div>Back to Lobby</div></div>
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Overview:</div></div>
                 <div className={classes.text}>Bruinopoly, a UCLA-themed monopoly game, was initially a DevX project that aimed to bring together UCLA students during the pandemic and 
-                    make it easier for people to meet new people and make friends. The project was never finished, but now it's been resurrected.</div>
+                    make it easier for people to meet new people and make friends. The project was never finished, but now it's been resurrected. Please enjoy!</div>
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Current State of Bruinopoly:</div></div>
-                <div className={classes.text}>I acknowledge the game may be buggy. 
+                <div className={classes.text}>The game may have bugs, but it should be fully playable. I'll try to continue polishing the game and resolve issues as they come to my attention.
                 </div>
                 <div className={classes.text}>IMPORTANT (Read this)
                     <ul>
-                        <li>Various bugs may cause the game to be unplayable. In order to reset the website, open the Javascript console (option-command-J on Macs) and 
-                            type in 'localStorage.clear()', then press 'Enter'. You should be taken back to the welcome page.</li>
+                        If the game enters an unplayable state, do the following to reset everything: open the Javascript console (option-command-J on Macs) and 
+                            type in 'localStorage.clear()', then press 'Enter'. You should be taken back to the welcome page.
                     </ul> 
                 </div>
                 <div className={classes.text}>Known Issues:

@@ -13,7 +13,8 @@ const mapStateToProps = state => ({
     user: state.lobbyReducer.userInfo,
     redirect: state.lobbyReducer.redirectTo,
     id: state.lobbyReducer.gameID,
-    token: state.lobbyReducer.token
+    token: state.lobbyReducer.token,
+    error: state.lobbyReducer.error,
 });
 
 const mapDispatchToProps = dispatch => ({

@@ -19,7 +19,7 @@ export default function Contact(props){
                 </div>
                 <div className={classes.roomsText} style={{backgroundColor: '#A8DDD7', cursor: 'pointer'}} onClick={()=> props.history.push("/")}><div>Back to Lobby</div></div>
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Report bugs:</div></div>
-                <div className={classes.text}>If you have a bug to report, please contact the Bruinopoly Reddit account @bruinopoly
+                <div className={classes.text}>If you have a bug to report, please contact the Bruinopoly Reddit account u/bruinopoly
                     <ul>
                         <li>take a screenshot of the game, if possible </li>
                         <li>take a picture of anything that appears in the Javascript console, if possible</li>
@@ -28,7 +28,7 @@ export default function Contact(props){
                 </div>  
                     
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>General feedback:</div></div>
-                <div className={classes.text}>Send a message to the Bruinopoly Reddit account @bruinopoly</div>
+                <div className={classes.text}>Send a message to the Bruinopoly Reddit account u/bruinopoly</div>
 
             </div>
         </div>

@@ -11,9 +11,11 @@ const ADD_NEW_ROOM = "ADD_NEW_ROOM"
 const JOIN_ROOM = "JOIN_ROOM"
 const LEAVE_ROOM = "LEAVE_ROOM"
 
-const LOBBY_ERROR = "LOBBY_ERROR"
-const JOIN_ROOM_ERROR = "JOIN_ROOM_ERROR"
-const CREATE_ROOM_ERROR = "CREATE_ROOMS_ERROR"
+const ERROR = "ERROR"
+// const LOBBY_ERROR = "LOBBY_ERROR"
+// const JOIN_ROOM_ERROR = "JOIN_ROOM_ERROR"
+// const CREATE_ROOM_ERROR = "CREATE_ROOMS_ERROR"
+const CLEAR_ERRORS = "CLEAR_ERRORS"
 
 const REQUEST_START = "REQUEST_START"
 const START_GAME = "START_GAME"
@@ -102,9 +104,7 @@ const initialState = {
     rooms: null,
     socket: null,
     socketParams: null,
-    lobbyError: null,
-    joinRoomError: null,
-    createRoomError: null,
+    error: null,
     players: null,
     gameID: null,
     isHost: false,
@@ -189,15 +189,17 @@ export function lobbyReducer(state = initialState, action) {
             return {...state, userInfo: action.userObj, redirectTo: "/"}
         case SET_ROOMS_LIST:
             return {...state, rooms: action.rooms}
-        case LOBBY_ERROR:
-            return {...state, lobbyError: action.error}
-        case JOIN_ROOM_ERROR:
-            if(state.socket !== null && typeof state.socket.close !== "undefined")
-                state.socket.close()
-            return {...state, joinRoomError: action.error, gameID: null, game: null, players: null, socket: null}
-        case CREATE_ROOM_ERROR:
-            alert("Room could not be created. Something went wrong.")
-            return {...state, createRoomError: action.error}
+        case ERROR:
+            return {...state, error: action.error}
+        case CLEAR_ERRORS:
+            return {...state, error: null}
+        // case LOBBY_ERROR:
+        //     return {...state, lobbyError: action.error}
+        // case JOIN_ROOM_ERROR:
+        //     return {...state, joinRoomError: action.error, gameID: null, game: null, players: null, socket: null}
+        // case CREATE_ROOM_ERROR:
+        //     //alert("Room could not be created. Something went wrong.")
+        //     return {...state, createRoomError: action.error}
         case ADD_NEW_ROOM:
             return {...state, rooms: [...state.rooms, action.room], token: action.token}
         case JOIN_ROOM:
@@ -753,8 +755,8 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
     try {
         socket = new WebSocket(`${SOCKET_URL}?room_id=${id}&name=${name}&password=${password}&token=${token}`);
     } catch(e){
-        console.log("An error occurred: ", e)
-        return dispatch({type: JOIN_ROOM_ERROR, error: "Failed to join room"})
+        // console.log("An error occurred: ", e)
+        return dispatch({type: ERROR, error: "Failed to join room"})
     }
     
     dispatch({type: SET_SOCKET, socket, info: {id, name, password, token}})
@@ -771,11 +773,15 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
 
     socket.addEventListener('message', function(event) {
         let data = JSON.parse(event.data)
-        console.log('Message from server ', data);
+        //console.log('Message from server ', data);
 
         switch(data[0]){
             case 'join-error':
-                dispatch({type: JOIN_ROOM_ERROR, error: data[1].message})
+                dispatch({type: ERROR, error: data[1].message})
+                socket.close()
+                break;
+            case 'start-error':
+                dispatch({type: ERROR, error: data[1].message})
                 break;
             case 'playerlist':
                 dispatch({type: UPDATE_PLAYERS, players: data[1].message})
@@ -898,29 +904,26 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
 
 export const createRoom = (data) => async (dispatch) => {
     if(data.name === "" || data.startTime === "" || data.timeLimit === ""){
-        dispatch({type: CREATE_ROOM_ERROR, error: "All rooms require a name, a start time, and a time limit."})
+        dispatch({type: ERROR, error: "All rooms require a name, a start time, and a time limit."})
         return
     }
-    
-    //console.log(data)
+
     try {  
         let result = await axios.post(`${API_URL}/rooms`, data);
         //console.log(result.data);
 
         dispatch({type: ADD_NEW_ROOM, room: result.data.room, token: result.data.token})
     } catch(e){
-        dispatch({type: CREATE_ROOM_ERROR, error: e})
+        dispatch({type: ERROR, error: e})
     }
 }
 
 export const getRooms = () => async (dispatch) => {
     try {
         let result = await axios.get(`${API_URL}/rooms`)
-
         dispatch({type: SET_ROOMS_LIST, rooms: result.data.rooms})
     } catch(e){
-       // console.log(e)
-        dispatch({type: LOBBY_ERROR, error: e})
+        dispatch({type: ERROR, error: "Something went wrong retrieving the rooms. Please try again"})
     }
    
 };

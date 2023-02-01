@@ -7,6 +7,7 @@ import decode from 'jwt-decode'
 import { mapIdToName, ENV } from '../config';
 import { checkSocket, handleCardDraw } from '../reducers/lobby';
 
+import ErrorPopup from './ErrorPopup'
 import Board from '../containers/Board';
 import Sidebar from './Sidebar';
 import WinPopup from './Board/WinPopup'
@@ -58,6 +59,7 @@ export default function GameScreen(props){
 
     return(
         <div className={classes.main}>
+            {props.error && <ErrorPopup message={props.error} />}
             {props.jailPopup && <JailPopup />}
             {props.winPopup && <WinPopup winner={props.winPopup}/>}
             <div className={classes.topBar}>
