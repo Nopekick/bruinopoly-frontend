@@ -316,9 +316,11 @@ let mapIdToName = (players, id) => {
     return p.name
 }
 
-let getAssetWealth = (playerId, game) => {
+let getAssetWealth = (playerId, game, jailCardCount) => {
     const player = game.players.find(p => p._id === playerId)
     let wealth = 0;
+
+    wealth += jailCardCount * 50
      
     //i is an index into the correct property in both game.properties and PROPERTIES 
     for (const i of player.propertiesOwned) {

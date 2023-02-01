@@ -6,7 +6,6 @@ export default function CardPopup(props){
     const classes = useStyles();
     const wrapperRef = useRef(null);
     const dispatch = useDispatch()
-    const [name, setName] = useState("")
     useOutsideAlerter(wrapperRef);
 
     useEffect(() => {

@@ -5,7 +5,7 @@ export default function PlayerToken(props){
     const classes = useStyles(props);
 
     return(
-        <div className={classes.outerToken}>
+        <div style={props.bankrupt ? {display: 'none'} : null} className={classes.outerToken}>
              <img alt="player token" className={classes.token} src={props.img} />
         </div>
     )

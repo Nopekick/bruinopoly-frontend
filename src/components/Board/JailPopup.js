@@ -1,29 +1,35 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { handleSellJailCard } from '../../reducers/lobby';
 
 
-export default function JailPopup(props){
+export default function JailPopup(){
     const classes = useStyles();
     const dispatch = useDispatch()
+    const canSell = useSelector(state => state.lobbyReducer.jailPopup.sell)
 
     let handleClose = () => {
         dispatch({type: "CLOSE_JAIL_POPUP"})
     }
     
     let handleUseJailCard = () => {
-        dispatch({type: "USE_GET_OUT_OF_JAIL"})
+        if(canSell)
+            dispatch(handleSellJailCard())
+        else
+            dispatch({type: "USE_GET_OUT_OF_JAIL"})
     }
-
 
     return(
         <div className={classes.outer}>
             <div className={classes.shadow}></div>
             <div className={classes.container}>
-                <div className={classes.topBox}>Use Get Out Of Jail Card</div>
+                <div className={classes.topBox}>{canSell ? "Sell Get Out of Jail Card" : "Use Get Out Of Jail Card"}</div>
                 <div style={{display: 'flex', justifyContent: 'space-around', width: '78%'}}>
-                    <button onClick={handleClose} className={classes.button} style={{width: '158px'}}>CANCEL</button>
-                    <button onClick={handleUseJailCard} className={classes.button} style={{width: '158px'}}>USE CARD</button>
+                    <button onClick={handleClose} className={classes.button}>CANCEL</button>
+                    <button onClick={handleUseJailCard} className={classes.button}>
+                        {canSell ? "SELL CARD FOR $50" : "USE CARD"}
+                    </button>
                 </div>
             </div>
         </div>
@@ -98,9 +104,9 @@ const useStyles = makeStyles(() => ({
     },
     button: {
         color: 'white',
+        padding: '9px 11px',
         borderRadius: '9px',
-        fontSize: '22px',
-        height: '35px',
+        fontSize: '21px',
         textShadow: '2px 2px 0px rgba(0, 0, 0, 0.25)',
         display: 'flex',
         alignItems: 'center',

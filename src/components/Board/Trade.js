@@ -15,6 +15,7 @@ export default function TradePopup(props){
     const [otherProperties, changeOtherProperties] = useState([])
     const [propertiesITrade, changeMyTradeProperties] = useState([])
     const [propertiesOtherTrade, changeOtherTradeProperties] = useState([])
+
     const players = useSelector(state => state.lobbyReducer.game.players)
     const player = useSelector(state => state.lobbyReducer.userInfo)
     const trade = useSelector(state => state.lobbyReducer.tradePopup)
@@ -139,7 +140,7 @@ export default function TradePopup(props){
                                 onClick={()=>{handleIncrease(true)}}/>}
                         </div>
                         <div className={classes.propertiesToTrade}>
-                        {!trade.receive && myProperties.map((p, i) => {
+                        {!trade.receive && myProperties.filter((p) => properties[p].dormCount === 0).map((p, i) => {
                             return <div key={i} style={{backgroundColor: propertiesITrade.includes(p) ? "#e1e6e2" : 'white'}} 
                                 onClick={()=> handleMyProperties(p)} className={classes.propertyBox}>
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
@@ -164,7 +165,7 @@ export default function TradePopup(props){
                             (<div className={classes.colorBar}>{tradeOffererName}</div>) 
                         :   (<select onChange={(e)=>{changeRecipient(e.target.value)}} className={classes.colorBar} style={{textAlign: 'center'}}>
                                 <option value={""}>Choose player</option>
-                                {players.filter(p => p._id !== player.id).map((p, i) => {
+                                {players.filter(p => p._id !== player.id && !p.isBankrupt).map((p, i) => {
                                     return <option key={i} value={p._id}>{p.name}</option>
                                 })}
                             </select>) 
@@ -176,7 +177,7 @@ export default function TradePopup(props){
                                 onClick={()=>{handleIncrease(false)}}/>}
                         </div>
                         <div className={classes.propertiesToTrade}>
-                        {!trade.receive && otherProperties.map((p, i) => {
+                        {!trade.receive && otherProperties.filter((p) => properties[p].dormCount === 0).map((p, i) => {
                             return <div key={i} style={{backgroundColor: propertiesOtherTrade.includes(p) ? "#e1e6e2" : 'white'}}
                                 onClick={()=> handleOtherProperties(p)} className={classes.propertyBox}>
                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>

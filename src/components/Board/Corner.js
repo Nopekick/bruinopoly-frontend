@@ -21,9 +21,9 @@ export default function Corner(props){
     return(
         <div className={classes.main}>
             <img alt="corner type" src={props.icon} className={classes.icon}/>
-            {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id).map((player, i)=>{
+            {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id && !p.isBankrupt).map((player, i)=>{
                 return <PlayerToken key={i} color={playerDetails[playerMap[player._id]].color} img={playerDetails[playerMap[player._id]].img} 
-                        top={cornerPos[i].top} left={cornerPos[i].left} />
+                        top={cornerPos[i].top} left={cornerPos[i].left} bankrupt={player.isBankrupt}/>
             })}
         </div>
     )

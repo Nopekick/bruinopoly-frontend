@@ -6,7 +6,7 @@ export default function PlayerBanner(props){
 
     return (
         <div className={classes.container}>
-            <div className={classes.circle} style={{backgroundColor: props.color}}>
+            <div className={classes.circle} style={{backgroundColor: props.color, border: props.bankrupt ? "3px solid #d1584f" : null}}>
                 <img alt="token character" className={classes.bman} src={props.token} />
             </div>
             <div className={classes.triangle}></div>
@@ -20,10 +20,11 @@ const useStyles = makeStyles(() => ({
     container: {
         width: '416px',
         height: '113px',
-        position: 'relative'
+        position: 'relative',
     },
     circle: {
         position: 'absolute',
+        boxSizing: 'border-box',
         height: '108px',
         width: '108px',
         borderRadius: '50%',

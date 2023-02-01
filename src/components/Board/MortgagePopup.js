@@ -37,7 +37,7 @@ export default function MortgagePopup(props){
                 <div className={classes.box}>
                     <div className={classes.colorBar}>{player.name}</div>
                     <div style={{height: '300px', overflow: 'scroll'}}>
-                    {me.propertiesOwned.map((p, i)=>{
+                    {me.propertiesOwned.filter((p) => properties[p].dormCount === 0).map((p, i)=>{
                             if(properties[p].isMortgaged)
                                 return <div className={classes.wholeBox} key={i}>
                                             <div key={i} className={classes.propertyBox}>
