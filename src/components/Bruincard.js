@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles';
 import roycehall from '../assets/Royce.png';
 import blob1 from '../assets/blob2.png'
@@ -40,9 +40,13 @@ export default function Bruincard(props){
 
 function JailCard(props){
     const dispatch = useDispatch()
+    const bankruptcy = useSelector(state => state.lobbyReducer.bankruptcy)
 
     let handleUse = () => {
-        dispatch({type:"OPEN_JAIL_POPUP"})
+        if(bankruptcy && bankruptcy.impossible === false)
+            dispatch({type:"OPEN_JAIL_POPUP", sell: true})
+        else 
+            dispatch({type:"OPEN_JAIL_POPUP", sell: false})
     }
 
     return <div onClick={handleUse} style={{height: '30px', width: '62px', borderRadius: '5px', backgroundColor: '#F5D34D', 

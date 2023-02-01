@@ -316,6 +316,31 @@ let mapIdToName = (players, id) => {
     return p.name
 }
 
+let getAssetWealth = (playerId, game, jailCardCount) => {
+    const player = game.players.find(p => p._id === playerId)
+    let wealth = 0;
+
+    wealth += jailCardCount * 50
+     
+    //i is an index into the correct property in both game.properties and PROPERTIES 
+    for (const i of player.propertiesOwned) {
+        //For mortgaged properties, only add mortgage price
+        if(game.properties[i].isMortgaged) {
+            wealth += PROPERTIES[i].mortgage
+            continue;
+        } 
+
+        //Add the property price itself if not mortgaged
+        wealth += PROPERTIES[i].price; 
+
+        //Add money from dorms & apartments
+        if(!PROPERTIES[i].railroad && !PROPERTIES[i].utility) {
+            wealth += (game.properties[i].dormCount * PROPERTIES[i].dormCost);
+        } 
+    }
+    return wealth;
+}
+
 export {majors, API_URL, SOCKET_URL, ENV, minGameTime, positions, sleep, CHANCE, CHEST, 
     PROPERTIES, TILES, TileType, playerDetails, getColor, mapIdToName, cornerPos, 
-    propertyPos, jailPosJail, jailPosNoJail}
+    propertyPos, jailPosJail, jailPosNoJail, getAssetWealth}

@@ -21,13 +21,13 @@ export default function Jail(props){
     return(
         <div className={classes.main}>
             <img alt="corner type" src={props.icon} className={classes.icon}/>
-            {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id && p.turnsInJail !== 0).map((player, i)=>{
+            {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id && p.turnsInJail !== 0  && !p.isBankrupt).map((player, i)=>{
                 return <PlayerToken key={i} color={playerDetails[playerMap[player._id]].color} top={jailPosJail[i].top} left={jailPosJail[i].left} 
-                            img={playerDetails[playerMap[player._id]].img} />
+                            img={playerDetails[playerMap[player._id]].img} bankrupt={player.isBankrupt}/>
             })}
-            {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id && p.turnsInJail === 0).map((player, i)=>{
+            {Object.keys(playerMap).length > 0 && players.filter(p => p.currentTile === props.id && p.turnsInJail === 0  && !p.isBankrupt).map((player, i)=>{
                 return <PlayerToken key={i} color={playerDetails[playerMap[player._id]].color} top={jailPosNoJail[i].top} left={jailPosNoJail[i].left} 
-                            img={playerDetails[playerMap[player._id]].img} />
+                            img={playerDetails[playerMap[player._id]].img} bankrupt={player.isBankrupt}/>
             })}
         </div>
     )

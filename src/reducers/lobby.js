@@ -1,5 +1,7 @@
 import axios from 'axios';
-import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, TILES, CHANCE, CHEST} from '../config';
+import { batch } from 'react-redux';
+import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, 
+    TILES, CHANCE, CHEST, getAssetWealth} from '../config';
 
 
 const SET_USER_INFO = "SET_USER_INFO"
@@ -36,6 +38,8 @@ const HANDLE_CHANGE_MONEY = "HANDLE_CHANGE_MONEY"
 const ALL_TRANSFER_MONEY_TO = "ALL_TRANSFER_MONEY_TO"
 
 const GET_JAIL_CARD = "GET_JAIL_CARD"
+const REMOVE_ALL_JAIL_CARD = "REMOVE_ALL_JAIL_CARD"
+const REMOVE_JAIL_CARD = "REMOVE_JAIL_CARD"
 const GO_TO_JAIL = "GO_TO_JAIL"
 const GO_TO_JAIL_NO_MOVE = "GO_TO_JAIL_NO_MOVE"
 const USE_GET_OUT_OF_JAIL = "USE_GET_OUT_OF_JAIL"
@@ -71,6 +75,11 @@ const CLOSE_DOUBLES = "CLOSE_DOUBLES"
 const CLOSE_CHEST = "CLOSE_CHEST"
 const CLOSE_CHANCE = "CLOSE_CHANCE"
 
+const HANDLE_BANKRUPTCY = "HANDLE_BANKRUPTCY"
+const CLOSE_BANKRUPTCY = "CLOSE_BANKRUPTCY"
+const END_BANKRUPTCY = "END_BANKRUPTCY"
+const OPEN_BANKRUPTCY = "OPEN_BANKRUPTCY"
+
 //actions types to handle game-events from server
 const ADD_PROPERTY = "ADD_PROPERTY"
 const HANDLE_RENT = "HANDLE_RENT"
@@ -83,6 +92,8 @@ const TEST_ADD_PLAYERS = "TEST_ADD_PLAYERS"
 const TEST_MOVE_ALL_TO = "TEST_MOVE_ALL_TO"
 const TEST_ALL_TO_JAIL = "TEST_ALL_TO_JAIL"
 const TEST_ADD_JAIL_CARDS = "TEST_ADD_JAIL_CARDS"
+const TEST_SET_MONEY = "TEST_SET_MONEY"
+const TEST_RESET_OWNERSHIP = "TEST_RESET_OWNERSHIP"
 
 
 const initialState = {
@@ -109,6 +120,7 @@ const initialState = {
     mortgagePopup: null,
     winPopup: null,
     jailPopup: null,
+    bankruptcy: null,
     doubles: null,
     jailCards: 0,
     endTurnInProgress: null,
@@ -117,6 +129,10 @@ const initialState = {
 
 export function lobbyReducer(state = initialState, action) {
     switch (action.type) {
+        case TEST_RESET_OWNERSHIP:
+            return {...state, game: {...state.game, properties: state.game.properties.map(p => {
+                return {...p, ownerId: null}
+            })}}
         case TEST_ADD_PLAYER: 
             return {...state, game: {...state.game, players: [...state.game.players, action.player]}}
         case TEST_ADD_PLAYERS: 
@@ -127,8 +143,15 @@ export function lobbyReducer(state = initialState, action) {
             return {...state, game: {...state.game, players: state.game.players.map((p) => {return {...p, turnsInJail: 1}})}}
         case TEST_ADD_JAIL_CARDS:
             return {...state, jailCards: 2}
+        case TEST_SET_MONEY:
+            if(state.socket !== null)
+                state.socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: action.playerId, moneyChange: action.money}] ]))
+            return {...state, game: {...state.game, players: state.game.players.map((p) => {
+                if(p._id === action.playerId) return {...p, money: p.money + action.money}
+                else return p
+            })}}
         case BUY_ALL_PROPERTIES:
-            if(state.yourTurn === false) return
+            if(state.yourTurn === false) return state
             let arr = [6,8,9]
             let propertyCost = 0
             const bonus = 15000
@@ -178,6 +201,7 @@ export function lobbyReducer(state = initialState, action) {
         case ADD_NEW_ROOM:
             return {...state, rooms: [...state.rooms, action.room], token: action.token}
         case JOIN_ROOM:
+            //Would break game if multiple players have same name, id incorrectly assigned
             let playerId = null; 
             action.room.players.forEach((player)=> { 
                 if(player.name === state.userInfo.name)
@@ -193,7 +217,7 @@ export function lobbyReducer(state = initialState, action) {
             //SHOULD TOKEN BECOME NULL UPON LEAVING ROOM? MAYBE CHANGE LATER
             return {...state, gameID: null, yourTurn: false, isHost: false, messages: [], players: null, game: null, socket: null, doubles: null, jailPopup: null,
                  chancePopup: null, chestPopup: null, salePopup: null, tradePopup: null, propertyPopup: null, token: null, winPopup: null, jailCards: 0,
-                  endTurnInProgress: null, hideDice: true}
+                  endTurnInProgress: null, hideDice: true, userInfo: {...state.userInfo, id: null}}
         case UPDATE_PLAYERS:
             return {...state, players: action.players}
         case ADD_MESSAGE:
@@ -291,10 +315,15 @@ export function lobbyReducer(state = initialState, action) {
             } else if(p2.turnsInJail !== 0 && action.doubles === false){
                 if(state.socket !== null){
                     state.socket.send(JSON.stringify(['game-events', [{type: 'JAIL_TURN', playerId: state.userInfo.id}] ]))
+
+                    //Pay $50 for escaping jail
+                    if(p2.turnsInJail === 1) 
+                        state.socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: p2._id, moneyChange: -50}] ]))
                 }
         
                 return {...state, game: {...state.game, players: state.game.players.map((p)=>{
                     if(p._id !== state.userInfo.id) return p
+                    else if(p.turnsInJail === 1) return {...p, turnsInJail: p.turnsInJail - 1, money: p.money - 50}
                     return {...p, turnsInJail: p.turnsInJail - 1}
                 })}}
             } else if(action.doubles === false){
@@ -305,9 +334,9 @@ export function lobbyReducer(state = initialState, action) {
             return {...state}
         case OPEN_JAIL_POPUP:
             const jailPlayer = state.game.players.filter(p => p._id === state.userInfo.id)[0]
-            if(jailPlayer.turnsInJail === 0) return {...state}
+            if(jailPlayer.turnsInJail === 0 && !action.sell) return {...state}
             
-            return {...state, jailPopup: true}
+            return {...state, jailPopup: {sell: action.sell}}
         case CLOSE_JAIL_POPUP:
             return {...state, jailPopup: null}
         case GET_JAIL_CARD:
@@ -322,6 +351,10 @@ export function lobbyReducer(state = initialState, action) {
                     if(p._id !== state.userInfo.id) return p
                     return {...p, turnsInJail: 0}
                 })}}
+        case REMOVE_ALL_JAIL_CARD:
+            return {...state, jailCards: 0}
+        case REMOVE_JAIL_CARD:
+            return {...state, jailCards: Math.max(0, state.jailCards - 1)}
         case GET_OUT_OF_JAIL_FREE:
             return {...state, game: {...state.game, players: state.game.players.map((p) => {
                     if(p._id !== action.id) return p
@@ -347,7 +380,8 @@ export function lobbyReducer(state = initialState, action) {
                 else return {...player, turnsInJail: 3}
             })}} 
         case OPEN_TRADE:
-            if(state.game.players.length > 1 && state.yourTurn === true)
+            let thisPlayer = state.game.players.find(p => p._id === state.userInfo.id)
+            if(state.game.players.length > 1 && state.yourTurn === true && !thisPlayer.isBankrupt)
                 return {...state, tradePopup: {receive: false}}
             else return {...state}
         case OFFER_TRADE:
@@ -569,6 +603,10 @@ export function lobbyReducer(state = initialState, action) {
             return {...state, chestPopup: null}
         case CLOSE_CHANCE:
             return {...state, chancePopup: null}
+        case CLOSE_BANKRUPTCY:
+            return {...state, bankruptcy: {...state.bankruptcy, show: false}}
+        case END_BANKRUPTCY:
+            return {...state, bankruptcy: null}
         case HIDE_DICE:
             return {...state, hideDice: true}
         case ADD_PROPERTY:
@@ -676,12 +714,28 @@ export function lobbyReducer(state = initialState, action) {
                 else 
                     return p
             })}}
+        case HANDLE_BANKRUPTCY: 
+            return {...state, game: {...state.game, players: state.game.players.map((p)=>{
+                if(p._id === action.playerId)
+                    return {...p, money: 0, isBankrupt: true, propertiesOwned: []}
+                else    
+                    return p
+            }), properties: state.game.properties.map((p, i)=>{
+                if(p.ownerId === action.playerId)
+                    return {...p, dormCount: 0, isMortgaged: false, ownerId: null}
+                else
+                    return p
+            })}}
+        case OPEN_BANKRUPTCY:
+            return {...state, bankruptcy: {impossible: action.impossible, show: true, endTurn: action.endTurn}}
         case ALL_TRANSFER_MONEY_TO:
+            const nonBankrupt = nonBankruptCount(state.game.players)
             return {...state, game: {...state.game, players: state.game.players.map((p)=>{
                 if(p._id === action.playerId) 
-                    return {...p, money: p.money + action.transferAmount * (state.game.players.length - 1)}
-                else 
+                    return {...p, money: p.money + action.transferAmount * (nonBankrupt - 1)}
+                else if(!p.isBankrupt)
                     return {...p, money: p.money - action.transferAmount}
+                else return p
             })}}
         case GAME_OVER:
             // make other popups false?
@@ -693,7 +747,7 @@ export function lobbyReducer(state = initialState, action) {
     }
 }
 
-export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
+export const joinRoom = ({id, name, password, token}) => async (dispatch, getState) => {
     //console.log(id, name, password)
     let socket;
     try {
@@ -709,7 +763,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
         // console.log("Websocket server connection successful")
     })
 
-    socket.addEventListener('close',(e) => {
+    socket.addEventListener('close',() => {
         console.log("Socket connection has closed")
         dispatch(checkSocket())
     })
@@ -743,12 +797,17 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                 dispatch({type: START_GAME, game: data[1].game})
                 break;
             case 'game-over':
-                console.log("The winner has id:",data[1].winner)
+                //console.log("The winner has id:",data[1].winner)
                 dispatch({type: GAME_OVER, winner: data[1].winner, maxWealth: data[1].maxWealth})
-                //dispatch event to close socket connection, display winner popup with button to leave game
                 break;
             case 'your-turn':
-                dispatch({type: START_TURN})
+                const playerId = getState().lobbyReducer.userInfo.id
+                const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
+                if(player.money < 0) {
+                    dispatch(handleBankruptcy(false))
+                } else {
+                    dispatch({type: START_TURN})
+                }
                 break;
             case 'player-turn':
                 dispatch({type: SET_TURN, id: data[1].id})
@@ -819,6 +878,9 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch) => {
                         break
                     case "RENT":
                         dispatch({type: HANDLE_RENT, rent: event.rent, playerId: event.playerId, ownerId: event.propertyOwner})
+                        break;
+                    case "BANKRUPTCY":
+                        dispatch({type: HANDLE_BANKRUPTCY, playerId: event.playerId})
                         break;
                     case "CLOSE_TRADE":
                         dispatch({type: CANCEL_TRADE})
@@ -918,6 +980,67 @@ export const handleMoveBackwards = ({playerId, tile}) => async (dispatch, getSta
     }
 }
 
+// Player money must be negative, otherwise undefined behavior
+const handleBankruptcy = (endTurn) => async (dispatch, getState) => {
+    const user = getState().lobbyReducer.userInfo
+    const player = getState().lobbyReducer.game.players.find(p => p._id === user.id)
+    const game = getState().lobbyReducer.game
+    const jailCards = getState().lobbyReducer.jailCards
+    const assetWealth = getAssetWealth(user.id, game, jailCards)
+
+    if(player.money >= 0) return;
+
+    const impossible = player.money + assetWealth < 0
+    dispatch({type: OPEN_BANKRUPTCY, impossible, endTurn})
+}
+
+export const declareBankruptcy = () => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    const user = getState().lobbyReducer.userInfo
+
+    if(socket !== null)
+        socket.send(JSON.stringify(['game-events', [{type: 'BANKRUPTCY', playerId: user.id}, {type: 'END_TURN'}] ]))
+    
+    batch(() => {
+        dispatch({type: HANDLE_BANKRUPTCY, playerId: user.id})
+        dispatch({type: REMOVE_ALL_JAIL_CARD})
+        dispatch({type: END_TURN})
+    })
+    
+    // await sleep(1)
+    // dispatch(handleEndTurn())
+}
+
+export const escapeBankruptcy = () => async (dispatch, getState) => {
+    const user = getState().lobbyReducer.userInfo
+    const player = getState().lobbyReducer.game.players.find(p => p._id === user.id)
+    const endTurn = getState().lobbyReducer.bankruptcy.endTurn
+
+    if(player.money >= 0) {
+        dispatch({type: END_BANKRUPTCY})
+
+        if(endTurn) {
+            dispatch(handleEndTurn())
+        } else {
+            dispatch({type: START_TURN})
+        }
+    }
+}
+
+export const handleSellJailCard = () => async (dispatch, getState) => {
+    const socket = getState().lobbyReducer.socket
+    const user = getState().lobbyReducer.userInfo
+
+    batch(() => {
+        dispatch({type: REMOVE_JAIL_CARD})
+        dispatch({type: CLOSE_JAIL_POPUP})
+        dispatch({type: HANDLE_CHANGE_MONEY, playerId: user.id, money: 50})
+    })
+
+    if(socket !== null)
+        socket.send(JSON.stringify(['game-events', [{type: 'CHANGE_MONEY', playerId: user.id, moneyChange: 50}] ]))
+}
+
 export const handleCardDraw = (deckName, id, movement) => async (dispatch, getState) => {
     const socket = getState().lobbyReducer.socket
     const index = deckName === "CHANCE" ? getState().lobbyReducer.game.chanceDeck.currentCardIndex : getState().lobbyReducer.game.communityChestDeck.currentCardIndex
@@ -971,7 +1094,7 @@ export const handleFees = ({id}) => async (dispatch, getState) => {
 export const turnLogic = ({movement, id, destination, doubles}) => async (dispatch, getState) => {
     dispatch({type: HIDE_DICE})
     //const socket = getState().lobbyReducer.socket
-    const player = getState().lobbyReducer.game.players.find(p => p._id === id)
+    let player = getState().lobbyReducer.game.players.find(p => p._id === id)
     const doubleState = getState().lobbyReducer.doubles
 
     await dispatch(handleMovement({movement, id, doubles, onlyMove: false}))
@@ -985,18 +1108,24 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     else if(TILES[destination].type === TileType.PROPERTY){
         dispatch({type: PROPERTY_DECISION, id: destination, movement})
     } else if(TILES[destination].type === TileType.CHANCE){
-        dispatch(handleCardDraw("CHANCE", id, movement))
+        await sleep(0.8)
+        await dispatch(handleCardDraw("CHANCE", id, movement))
     } else if(TILES[destination].type === TileType.CHEST){
-        dispatch(handleCardDraw("CHEST", id, movement))
+        await sleep(0.8)
+        await dispatch(handleCardDraw("CHEST", id, movement))
     } else if(TILES[destination].type === TileType.FEES){
-        dispatch(handleFees({id}))
+       dispatch(handleFees({id}))
     } else {
         if(destination === 30){
             dispatch({type: GO_TO_JAIL, id, tellServer: true})
         }
     }
 
-    if(doubles){
+    player = getState().lobbyReducer.game.players.find(p => p._id === id)
+    if(player.money < 0) {
+        //If negative money and doubles, allow for 'extra turn' if able to esacpe bankruptcy 
+        dispatch(handleBankruptcy(!doubles))
+    } else if(doubles){
         dispatch({type: DOUBLES})
     } else {
         dispatch({type: INITIATE_END_TURN})
@@ -1055,6 +1184,11 @@ export const setUserInfo = (info) => async (dispatch) => {
 
     dispatch({type: SET_USER_INFO, userObj: {...info, id: null}})
 };
+
+const nonBankruptCount = (players) => {
+    let nonBankrupt = players.filter(p => p.isBankrupt === false) 
+    return nonBankrupt.length 
+  }
 
 const ownAll = (propertyNum, ownedProperties) => {
     if(propertyNum === 1 && ownedProperties.includes(1) && ownedProperties.includes(3)){

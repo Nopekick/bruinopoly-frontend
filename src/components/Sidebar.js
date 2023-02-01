@@ -122,7 +122,7 @@ export default function Sidebar(props){
                     {props.game && props.game.players.map((player, i) => {
                         if(player._id === props.user.id) return null;
                         return <PlayerBanner color={playerDetails[i].color} turn={player._id === props.game.currentTurn} key={i}
-                            name={player.name} money={player.money} token={playerDetails[i].img} />
+                            name={player.name} money={player.money} token={playerDetails[i].img} bankrupt={player.isBankrupt} />
                     })}
                 </div> 
             </div>}

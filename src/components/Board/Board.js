@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import {turnLogic, requestGameOver, handleEndTurn} from '../../reducers/lobby'
+import {turnLogic, requestGameOver, handleEndTurn, escapeBankruptcy} from '../../reducers/lobby'
 import {differenceInSeconds} from 'date-fns'
 import { makeStyles } from '@material-ui/core/styles';
 import { positions, sleep, CHEST, CHANCE, mapIdToName } from '../../config'
@@ -15,6 +15,7 @@ import TradePopup from './Trade'
 import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
 import TradeResult from './TradeResult';
+import BankruptcyPopup from './BankruptcyPopup';
 
 export default function Board(props){
     const endTurnInProgress = useSelector(state => state.lobbyReducer.endTurnInProgress)
@@ -23,9 +24,10 @@ export default function Board(props){
 
     const classes = useStyles();
 
-
     return(
         <div className={classes.board}>
+            {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.show && <BankruptcyPopup />}
+            {!props.chestPopup && !props.chancePopup &&!props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.impossible === false && <AttemptEscapeBankruptcy />}
             {props.mortgagePopup && <MortgagePopup />}
             {props.salePopup && <SalePopup property={props.salePopup} />}
             {props.propertyPopup && <PropertyPopup />}
@@ -99,7 +101,17 @@ function EndTurnAlerter(props) {
             <button onClick={()=>{dispatch(handleEndTurn())}} className={classes.button}>END TURN</button>
         </div>
     )
+}
 
+function AttemptEscapeBankruptcy() {
+    const dispatch = useDispatch()
+    const classes = turnStyles();
+
+    return (
+        <div className={classes.turnBox}>
+            <button onClick={()=>{dispatch(escapeBankruptcy())}} style={{marginTop: '20px'}} className={classes.button}>ESCAPE BANKRUPTCY</button>
+        </div>
+    )
 }
 
 function DiceBox() {

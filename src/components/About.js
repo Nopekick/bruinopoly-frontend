@@ -30,8 +30,6 @@ export default function About(props){
                 </div>
                 <div className={classes.text}>Known Issues:
                     <ul>
-                        <li>Notification of duplicates overlaps with drawn card</li>
-                        <li>No handling of bankrupty: money can go negative</li>
                         <li>No handling of players leaving a game once it has started</li>
                     </ul> 
                 </div>
