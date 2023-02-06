@@ -152,7 +152,7 @@ export function lobbyReducer(state = initialState, action) {
             })}}
         case BUY_ALL_PROPERTIES:
             if(state.yourTurn === false) return state
-            let arr = [6,8,9]
+            let arr = [6,8,9, 11, 13, 14]
             let propertyCost = 0
             const bonus = 15000
             arr.forEach((i) => {propertyCost += PROPERTIES[i].price})

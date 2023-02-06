@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {Fragment} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux'
 import {PROPERTIES, getColor} from '../../config';
@@ -50,13 +50,83 @@ export default function PropertyPopup(){
                                     <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 </div>
                                 <div className={classes.boxOfBoxes}>
-                                    <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
-                                        <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 1 ? "#72E7DA" : 'none'}}>{properties[p].dormCount}</div>
-                                        <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 2 ? "#72E7DA" : 'none'}}></div>
-                                        <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 3 ? "#72E7DA" : 'none'}}></div>
-                                        <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 4 ? "#72E7DA" : 'none'}}></div>
+                                    {/*  Below (good) code was buggy and did not correctly show the box colors when selling dorms. Bad code (copy/paste) works */
+                                    /* <div className={classes.boxOfBoxes}>
+                                        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                                            <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 1 ? "#72E7DA" : 'none'}}>{properties[p].dormCount}</div>
+                                            <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 2 ? "#72E7DA" : 'none'}}></div>
+                                            <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 3 ? "#72E7DA" : 'none'}}></div>
+                                            <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 4 ? "#72E7DA" : 'none'}}></div>
+                                        </div>
+                                        <div className={classes.bigFillInBox} style={{backgroundColor: properties[p].dormCount === 5 ? "#72E7DA" : 'none'}}></div>
                                     </div>
-                                    <div className={classes.bigFillInBox} style={{backgroundColor: properties[p].dormCount === 5 ? "#72E7DA" : 'none'}}></div>
+                                    */}
+                                    {
+                                        properties[p].dormCount === 0 && <Fragment>
+                                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                            </div>
+                                            <div className={classes.bigFillInBox} style={{backgroundColor: 'none'}}></div>
+                                        </Fragment>
+                                    }
+                                    {
+                                        properties[p].dormCount === 1 && <Fragment>
+                                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                            </div>
+                                            <div className={classes.bigFillInBox} style={{backgroundColor: 'none'}}></div>
+                                        </Fragment>
+                                    }
+                                    {
+                                        properties[p].dormCount === 2 && <Fragment>
+                                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                            </div>
+                                            <div className={classes.bigFillInBox} style={{backgroundColor:'none'}}></div>
+                                        </Fragment>
+                                    }
+                                    {
+                                        properties[p].dormCount === 3 && <Fragment>
+                                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: 'none'}}></div>
+                                            </div>
+                                            <div className={classes.bigFillInBox} style={{backgroundColor:'none'}}></div>
+                                        </Fragment>
+                                    }
+                                    {
+                                        properties[p].dormCount === 4 && <Fragment>
+                                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                            </div>
+                                            <div className={classes.bigFillInBox} style={{backgroundColor:'none'}}></div>
+                                        </Fragment>
+                                    }
+                                    {
+                                        properties[p].dormCount === 5 && <Fragment>
+                                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                                <div className={classes.fillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                            </div>
+                                            <div className={classes.bigFillInBox} style={{backgroundColor: '#72E7DA'}}></div>
+                                        </Fragment>
+                                    }
                                 </div>
                                 <button onClick={()=>{handleDormTransaction(p)}} className={classes.transactionButton}
                                     style={(thisPopup.sell === true && properties[p].dormCount === 0) || 
