@@ -30,6 +30,7 @@ const ADD_MESSAGE = "ADD_MESSAGE"
 const SET_SOCKET = "SET_SOCKET"
 
 const MOVE_ONE = "MOVE_ONE"
+const MOVE_ONE_ABSOLUTE = "MOVE_ONE_ABSOLUTE"
 const MOVE_ONE_BACKWARDS = "MOVE_ONE_BACKWARDS"
 const MOVEMENT = "MOVEMENT"
 
@@ -266,18 +267,23 @@ export function lobbyReducer(state = initialState, action) {
                 })}}
 
             return {...state}
+        case MOVE_ONE_ABSOLUTE:
+            let p = state.game.players.filter(p => p._id === action.id)[0]
+    
+            return {...state, game: {...state.game, players: state.game.players.map((player)=>{
+                if(player._id !== action.id) return player
+                else if((player.currentTile + 1)%40 === 0) return {...player, currentTile: 0, money: player.money + 200} //pass GO, get $200
+                else return {...player, currentTile: (player.currentTile + 1)%40}
+            })}}
         case MOVE_ONE_BACKWARDS:
             let p9 = state.game.players.filter(p => p._id === action.id)[0]
 
-            if(p9.turnsInJail === 0)
-                return {...state, game: {...state.game, players: state.game.players.map((player)=>{
-                    if(player._id !== action.id) return player
-                    else if(player.currentTile === 1) return {...player, currentTile: 0, money: player.money + 200} //pass GO, get $200
-                    else if(player.currentTile === 0) return {...player, currentTile: 39}
-                    else return {...player, currentTile: player.currentTile - 1}
-                })}}
-
-            return {...state}
+            return {...state, game: {...state.game, players: state.game.players.map((player)=>{
+                if(player._id !== action.id) return player
+                else if(player.currentTile === 1) return {...player, currentTile: 0, money: player.money + 200} //pass GO, get $200
+                else if(player.currentTile === 0) return {...player, currentTile: 39}
+                else return {...player, currentTile: player.currentTile - 1}
+            })}}
         case DOUBLES:
             //Logic when player rolls double: go to jail on 3rd consecutive doubles roll
             if(state.doubles === null){
@@ -754,6 +760,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
     let socket;
     try {
         socket = new WebSocket(`${SOCKET_URL}?room_id=${id}&name=${name}&password=${password}&token=${token}`);
+        console.log("<<Successfully connected to socket>>")
     } catch(e){
         // console.log("An error occurred: ", e)
         return dispatch({type: ERROR, error: "Failed to join room"})
@@ -766,7 +773,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
     })
 
     socket.addEventListener('close',() => {
-        console.log("Socket connection has closed")
+        console.log("**Socket connection has closed**")
         dispatch(checkSocket())
     })
 
@@ -825,7 +832,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
                 dispatch({type: RECEIVE_TRADE_DECISION, decision: data[1].decision})
                 break;
             case 'game-events':
-                console.log(data[1][0])
+                // console.log(data[1][0])
                 let event = data[1][0]
                 switch(event.type){
                     case "PURCHASE_DORM":
@@ -892,11 +899,11 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
                         dispatch({type: CANCEL_TRADE})
                         break;
                     default:
-                        console.log("game-events default")
+                        // console.log("game-events default")
                 }
                 break;
             default:
-                console.log("default case")
+                // console.log("default case")
         }
     })
     
@@ -968,7 +975,7 @@ export const handleAdvance = ({playerId, tile}) => async (dispatch, getState) =>
     const tilesToMove = tile > player.currentTile ? (tile - player.currentTile) : (40 - player.currentTile + tile)
 
     for(let i = 0; i < tilesToMove; i++){
-        dispatch({type: MOVE_ONE, id: playerId, doubles: false})
+        dispatch({type: MOVE_ONE_ABSOLUTE, id: playerId, doubles: false})
         await sleep(.7)
     }
 }

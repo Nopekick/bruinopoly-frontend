@@ -22,12 +22,20 @@ export default function About(props){
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Current State of Bruinopoly:</div></div>
                 <div className={classes.text}>The game may have bugs, but it should be fully playable. I'll try to continue polishing the game and resolve issues as they come to my attention.
                 </div>
-                <div className={classes.text}>IMPORTANT (Read this)
-                    <ul>
+                <ul className={classes.text}>
+                    <li>
                         If the game enters an unplayable state, do the following to reset everything: open the Javascript console (option-command-J on Macs) and 
-                            type in 'localStorage.clear()', then press 'Enter'. You should be taken back to the welcome page.
-                    </ul> 
-                </div>
+                            type in 'localStorage.clear()', then press 'Enter'. Reload the page, and you should be taken back to the welcome page.
+                    </li> 
+                    <li>
+                        The game is meant to be played on a laptop and probably looks strange or is unplayable on different platforms (phone, PC). This is because the styling 
+                        was only done on a laptop. Also, fullscreen the browser when playing. 
+                    </li> 
+                    <li>
+                        I don't want to pay for server hosting so I'm using a free hosting solution, Render (rip Heroku). Render spins down the server instance after 15 minutes 
+                        of inactivity, and it may take up to a minute or two to access the site after periods of inactivity due to the server restarting. 
+                    </li> 
+                </ul>
                 <div className={classes.text}>Known Issues:
                     <ul>
                         <li>No handling of players leaving a game once it has started</li>
