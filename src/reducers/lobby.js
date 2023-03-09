@@ -873,10 +873,10 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
                         dispatch(handleMovement({movement: event.numTiles, id: event.playerId, doubles: false, onlyMove: true}))
                         break;
                     case "ADVANCE":
-                        dispatch(handleAdvance({playerId: event.playerId, tile: event.tile}))
+                        dispatch(handleAdvance({playerId: event.playerId, tile: event.tile, startTile: event.startTile}))
                         break;
                     case "MOVE_BACKWARDS":
-                        dispatch(handleMoveBackwards({playerId: event.playerId, tile: event.tile}))
+                        dispatch(handleMoveBackwards({playerId: event.playerId, tile: event.tile, startTile: event.startTile}))
                         break;
                     case "PURCHASE_PROPERTY":
                         dispatch({type: ADD_PROPERTY, playerId: event.playerId, property: PROPERTIES[parseInt(event.propertyId)]})
@@ -973,9 +973,8 @@ export const checkSocket = () => async (dispatch, getState) => {
     }
 }
 
-export const handleAdvance = ({playerId, tile}) => async (dispatch, getState) => {
-    const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
-    const tilesToMove = tile > player.currentTile ? (tile - player.currentTile) : (40 - player.currentTile + tile)
+export const handleAdvance = ({playerId, tile, startTile}) => async (dispatch, getState) => {
+    const tilesToMove = tile > startTile ? (tile - startTile) : (40 - startTile + tile)
 
     for(let i = 0; i < tilesToMove; i++){
         dispatch({type: MOVE_ONE_ABSOLUTE, id: playerId, doubles: false})
@@ -983,9 +982,8 @@ export const handleAdvance = ({playerId, tile}) => async (dispatch, getState) =>
     }
 }
 
-export const handleMoveBackwards = ({playerId, tile}) => async (dispatch, getState) => {
-    const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
-    const tilesToMove = tile < player.currentTile ? (player.currentTile - tile) : (40 + player.currentTile - tile)
+export const handleMoveBackwards = ({playerId, tile, startTile}) => async (dispatch, getState) => {
+    const tilesToMove = tile < startTile ? (startTile - tile) : (40 + startTile - tile)
 
     for(let i = 0; i < tilesToMove; i++){
         dispatch({type: MOVE_ONE_BACKWARDS, id: playerId, doubles: false})
@@ -1121,10 +1119,10 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     else if(TILES[destination].type === TileType.PROPERTY){
         dispatch({type: PROPERTY_DECISION, id: destination, movement})
     } else if(TILES[destination].type === TileType.CHANCE){
-        await sleep(0.8)
+        await sleep(1)
         await dispatch(handleCardDraw("CHANCE", id, movement))
     } else if(TILES[destination].type === TileType.CHEST){
-        await sleep(0.8)
+        await sleep(1)
         await dispatch(handleCardDraw("CHEST", id, movement))
     } else if(TILES[destination].type === TileType.FEES){
        dispatch(handleFees({id}))

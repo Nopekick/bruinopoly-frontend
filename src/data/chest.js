@@ -13,12 +13,13 @@ const CHEST = [
       effect: (playerId) => {
         return async (dispatch, getState) => {
           const socket = getState().lobbyReducer.socket
+          const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
 
           if(socket !== null) {
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 0}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 0, startTile: player.currentTile}] ]))
           }
 
-          await dispatch(handleAdvance({tile: 0, playerId}))
+          await dispatch(handleAdvance({tile: 0, playerId, startTile: player.currentTile}))
         }
       }
     },
@@ -37,12 +38,13 @@ const CHEST = [
       effect: (playerId) => {
         return async (dispatch, getState) => {
           const socket = getState().lobbyReducer.socket
+          const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
 
           if(socket !== null) {
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 10}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 10, startTile: player.currentTile}] ]))
           }
             
-          await dispatch(handleAdvance({tile: 10, playerId}))
+          await dispatch(handleAdvance({tile: 10, playerId, startTile: player.currentTile}))
           if(socket !== null) {
             socket.send(JSON.stringify(['game-events', [{type: 'GO_TO_JAIL_NO_MOVE', playerId}] ]))
           }

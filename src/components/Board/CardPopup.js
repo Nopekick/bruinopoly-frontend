@@ -48,15 +48,13 @@ export default function CardPopup(props){
 const useStyles = makeStyles(() => ({
     container: {
         width: '524px',
-        height: '305px',
         borderRadius: '10px',
         boxShadow: '4px 4px 13px rgba(0, 0, 0, 0.15)',
         position: 'absolute',
         top: '220px',
         left: '108px',
         zIndex: 5,
-        padding: '22px',
-        boxSizing: 'border-box',
+        padding: '22px 1px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -80,13 +78,12 @@ const useStyles = makeStyles(() => ({
     },
     subBox: {
         width: '478px',
-        height: '203px',
+        minHeight: '203px',
         backgroundColor: '#F7F2E7',
         borderRadius: '10px',
         marginTop: '15px',
         paddingTop: '10px',
         overflow: 'scroll',
-        boxSizing: 'border-box'
     },
     innerText: {
         fontFamily: 'VCR',
@@ -95,7 +92,8 @@ const useStyles = makeStyles(() => ({
         margin: 'auto',
         textAlign: 'center',
         lineHeight: '34px',
-        maxWidth: '90%'
+        maxWidth: '90%',
+        paddingBottom: '10px'
     }
 }))
 

@@ -8,12 +8,13 @@ const CHANCE = [
       effect: (playerId) => {
         return async (dispatch, getState) => {
           const socket = getState().lobbyReducer.socket
+          const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
 
           if(socket !== null) {
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 0}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 0, startTile: player.currentTile}] ]))
           }
 
-          await dispatch(handleAdvance({tile: 0, playerId}))
+          await dispatch(handleAdvance({tile: 0, playerId, startTile: player.currentTile}))
         }
       }
     },
@@ -27,10 +28,10 @@ const CHANCE = [
           const utilityDestination = (player.currentTile <= 28 && player.currentTile > 12) ? 28 : 12;
 
           if(socket !== null) {
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: utilityDestination}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: utilityDestination, startTile: player.currentTile}] ]))
           }
 
-          await dispatch(handleAdvance({tile: utilityDestination, playerId}))
+          await dispatch(handleAdvance({tile: utilityDestination, playerId, startTile: player.currentTile}))
           dispatch({type: "PROPERTY_DECISION", id: utilityDestination, movement, utilityPayMax: true})
         }
       }
@@ -41,11 +42,12 @@ const CHANCE = [
       effect: (playerId) => {
         return async (dispatch, getState) => {
           const socket = getState().lobbyReducer.socket
+          const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
 
           if(socket !== null)
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 39}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 39, startTile: player.currentTile}] ]))
 
-          await dispatch(handleAdvance({tile: 39, playerId}))
+          await dispatch(handleAdvance({tile: 39, playerId, startTile: player.currentTile}))
 
           // Movement: 0 is ok as destination is not a utility, dice roll not important
           dispatch({type: "PROPERTY_DECISION", id: 39, movement: 0})
@@ -58,11 +60,12 @@ const CHANCE = [
       effect: (playerId) => {
         return async (dispatch, getState) => {
           const socket = getState().lobbyReducer.socket
+          const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
 
           if(socket !== null)
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 34}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 34, startTile: player.currentTile}] ]))
 
-          await dispatch(handleAdvance({tile: 34, playerId}))
+          await dispatch(handleAdvance({tile: 34, playerId, startTile: player.currentTile}))
 
           // Movement: 0 is ok as destination is not a utility, dice roll not important
           dispatch({type: "PROPERTY_DECISION", id: 34, movement: 0})
@@ -75,11 +78,12 @@ const CHANCE = [
       effect: (playerId) => {
         return async (dispatch, getState) => {
           const socket = getState().lobbyReducer.socket
+          const player = getState().lobbyReducer.game.players.find(p => p._id === playerId)
 
           if(socket !== null)
-            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 21}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'ADVANCE', playerId, tile: 21, startTile: player.currentTile}] ]))
 
-          await dispatch(handleAdvance({tile: 21, playerId}))
+          await dispatch(handleAdvance({tile: 21, playerId, startTile: player.currentTile}))
 
           // Movement: 0 is ok as destination is not a utility, dice roll not important
           dispatch({type: "PROPERTY_DECISION", id: 21, movement: 0})
@@ -119,9 +123,9 @@ const CHANCE = [
           const backThree = player.currentTile > 3 ? player.currentTile - 3 : (37 + player.currentTile)
 
           if(socket !== null)
-            socket.send(JSON.stringify(['game-events', [{type: 'MOVE_BACKWARDS', playerId, tile: backThree}] ]))
+            socket.send(JSON.stringify(['game-events', [{type: 'MOVE_BACKWARDS', playerId, tile: backThree, startTile: player.currentTile}] ]))
 
-          await dispatch(handleMoveBackwards({tile: backThree, playerId}))
+          await dispatch(handleMoveBackwards({tile: backThree, playerId, startTile: player.currentTile}))
 
           if(TILES[backThree].type === TileType.PROPERTY){
             dispatch({type: 'PROPERTY_DECISION', id: backThree, movement: 0})
