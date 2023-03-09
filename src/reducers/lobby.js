@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { batch } from 'react-redux';
 import {API_URL, SOCKET_URL, sleep, PROPERTIES, TileType, 
-    TILES, CHANCE, CHEST, getAssetWealth} from '../config';
+    TILES, CHANCE, CHEST, getAssetWealth, ENV} from '../config';
 
 
 const SET_USER_INFO = "SET_USER_INFO"
@@ -760,7 +760,7 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
     let socket;
     try {
         socket = new WebSocket(`${SOCKET_URL}?room_id=${id}&name=${name}&password=${password}&token=${token}`);
-        console.log("<<Successfully connected to socket>>")
+        console.log("**Successfully connected to socket server**")
     } catch(e){
         // console.log("An error occurred: ", e)
         return dispatch({type: ERROR, error: "Failed to join room"})
@@ -780,7 +780,10 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
 
     socket.addEventListener('message', function(event) {
         let data = JSON.parse(event.data)
-        //console.log('Message from server ', data);
+
+        if(ENV !== "PROD") {
+            console.log('Message from server ', data);
+        }
 
         switch(data[0]){
             case 'join-error':
