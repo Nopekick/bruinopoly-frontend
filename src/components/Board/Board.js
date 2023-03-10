@@ -39,8 +39,7 @@ export default function Board(props){
                 chance={true} name={mapIdToName(players, props.chancePopup.playerId)}/>}
             {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
             {props.turn && !hideDice && <DiceBox />}
-            {endTurnInProgress && <EndTurnAlerter date={endTurnInProgress} />}
-
+            {endTurnInProgress && <EndTurnAlerter date={endTurnInProgress} />}            
             <img draggable="false" alt="bruinopoly text" className={classes.Bruinopoly} src={Bruinopoly} />
             <img draggable="false" alt="B" className={classes.B} src={B} />
             <img draggable="false" alt="financial aid card" className={classes.FinAidCards} src={FinAidCards} />
