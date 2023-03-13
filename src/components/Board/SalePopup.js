@@ -27,7 +27,7 @@ export default function SalePopup(props){
             <div className={classes.container}>
                 <div className={classes.saleText}>FOR SALE</div>
                 <div className={classes.topBox}>${property.price}</div>
-                <div style={{display: 'flex', justifyContent: 'space-between', width: '482px', marginTop: '24px'}}>
+                <div style={{display: 'flex', flexDirection: 'row',justifyContent: 'space-between', width: '482px', marginTop: '24px'}}>
                     <div className={classes.box}>
                         <div className={classes.colorBar} style={{backgroundColor: getColor(props.property)}}></div>
                         <p className={classes.leftText} style={{marginBottom: '20px', marginTop: '15px'}}>{property.name}</p>
@@ -37,9 +37,7 @@ export default function SalePopup(props){
                              onClick={()=>{dispatch(handlePurchase({buy: false, property: props.property}))}}>SKIP</button>
                         <p className={classes.leftText}>Price: ${property.price}</p>
                     </div>
-                    <div>
-                        <PropertyInfoCard property={props.property} />
-                    </div>
+                    <PropertyInfoCard property={props.property} />
                 </div>
             </div>
         </div>

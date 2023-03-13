@@ -44,9 +44,7 @@ const useStyles = makeStyles(() => ({
         backgroundColor: '#F7F2E7',
         height: '337px',
         width: '227px',
-        boxSizing: 'border-box',
-        width: '100%',
-        height: '100%',
+        boxSizing: 'border-box'
     },
     colorBox: {
         backgroundColor: '#EAACA3',
