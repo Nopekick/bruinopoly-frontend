@@ -27,7 +27,7 @@ export default function Board(props){
     return(
         <div className={classes.board}>
             {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.show && <BankruptcyPopup />}
-            {!props.chestPopup && !props.chancePopup &&!props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.impossible === false && <AttemptEscapeBankruptcy />}
+            {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.impossible === false && <AttemptEscapeBankruptcy />}
             {props.mortgagePopup && <MortgagePopup />}
             {props.salePopup && <SalePopup property={props.salePopup} />}
             {props.propertyPopup && <PropertyPopup />}
@@ -37,7 +37,7 @@ export default function Board(props){
                 chest={true} name={mapIdToName(players, props.chestPopup.playerId)}/>}
             {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup.index]} id={props.chancePopup.playerId} 
                 chance={true} name={mapIdToName(players, props.chancePopup.playerId)}/>}
-            {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
+            {!props.salePopup && !props.chestPopup && !props.chancePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
             {props.turn && !hideDice && <DiceBox />}
             {endTurnInProgress && <EndTurnAlerter date={endTurnInProgress} />}            
             <img draggable="false" alt="bruinopoly text" className={classes.Bruinopoly} src={Bruinopoly} />

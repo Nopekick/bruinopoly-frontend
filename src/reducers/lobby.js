@@ -659,7 +659,7 @@ export function lobbyReducer(state = initialState, action) {
                     return p
                 }), players: state.game.players.map((p)=>{
                     if(p._id === action.playerId)
-                        return {...p, money: p.money - (PROPERTIES[action.propertyNum].mortgage * 1.1)}
+                        return {...p, money: Math.ceil(p.money - (PROPERTIES[action.propertyNum].mortgage * 1.1))}
                     return p
                 })}}
             } else  
@@ -1062,12 +1062,14 @@ export const handleCardDraw = (deckName, id, movement) => async (dispatch, getSt
             socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHANCE", playerId: id, cardIndex: index}] ]))
 
         dispatch({type: DRAW_CHANCE, id})
+        await sleep(.8)
         await dispatch(CHANCE[deck[index]].effect(id, movement))
     } else if(deckName === "CHEST") {
         if(socket !== null)
             socket.send(JSON.stringify(['game-events', [{type: 'CARD_DRAW', deck: "CHEST", playerId: id, cardIndex: index}] ]))
 
         dispatch({type: DRAW_CHEST, id})
+        await sleep(.8)
         await dispatch(CHEST[deck[index]].effect(id, movement))
     }
 }
@@ -1119,10 +1121,10 @@ export const turnLogic = ({movement, id, destination, doubles}) => async (dispat
     else if(TILES[destination].type === TileType.PROPERTY){
         dispatch({type: PROPERTY_DECISION, id: destination, movement})
     } else if(TILES[destination].type === TileType.CHANCE){
-        await sleep(1)
+        await sleep(.3)
         await dispatch(handleCardDraw("CHANCE", id, movement))
     } else if(TILES[destination].type === TileType.CHEST){
-        await sleep(1)
+        await sleep(.3)
         await dispatch(handleCardDraw("CHEST", id, movement))
     } else if(TILES[destination].type === TileType.FEES){
        dispatch(handleFees({id}))
