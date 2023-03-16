@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import {playerDetails, propertyPos} from '../../config'
 import PlayerToken from '../PlayerToken';
 
@@ -9,6 +9,7 @@ import apt from '../../assets/apt.png'
 import mortgage from '../../assets/mortgage_black.png'
 
 export default function Property(props){
+    const dispatch = useDispatch()
     const players = useSelector(state => state.lobbyReducer.game.players)
     const properties = useSelector(state => state.lobbyReducer.game.properties)
 
@@ -39,7 +40,7 @@ export default function Property(props){
     return(
         <div className={classes.main}>
             {properties[props.id].ownerId !== null && ownerIndex !== null && <div className={classes.ownership} style={{backgroundColor: playerDetails[ownerIndex].color}}></div>}
-            {props.color !== null && <div className={classes.colorBar}>
+            {props.color !== null && <div className={classes.colorBar} onClick={() => {dispatch({type: "OPEN_PROPERTY_INFO", property: props.id})}}>
                 {
                     properties[props.id].dormCount === 1 ? (<div className={classes.dormHolder}>
                         <img alt="dorm" src={dorm} className={classes.dorm} />
@@ -121,6 +122,7 @@ const useStyles = makeStyles(() => ({
         height: '20%',
         backgroundColor: props.color,
         width: '100%',
+        cursor: 'pointer'
     }),
     name: {
         //height: '20%',

@@ -58,7 +58,7 @@ const useStyles = makeStyles(() => ({
     },
     roomNumberHolder: {
         margin: "5px",
-        width: '135px',
+        width: '150px',
         height: '28px',
         textAlign: 'center',
         zIndex: '100'

@@ -22,17 +22,6 @@ export default function GameScreen(props){
     const token = useSelector(state => state.lobbyReducer.token)
     const socket = useSelector(state => state.lobbyReducer.socket)
     const heightMatch = useMediaQuery('(max-height:800px)');
-
-    // useEffect(() => {
-    //     Check for valid socket every 10 seconds
-    //     const interval = setInterval(() => {
-    //         dispatch(checkSocket())
-    //     }, 10000)
-
-    //     return () => {
-    //         clearInterval(interval)
-    //     }
-    // }, [])
     
     useEffect(() => {
         dispatch(checkSocket())

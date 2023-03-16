@@ -34,6 +34,8 @@ const MOVE_ONE_ABSOLUTE = "MOVE_ONE_ABSOLUTE"
 const MOVE_ONE_BACKWARDS = "MOVE_ONE_BACKWARDS"
 const MOVEMENT = "MOVEMENT"
 
+const OPEN_PROPERTY_INFO = "OPEN_PROPERTY_INFO"
+const CLOSE_PROPERTY_INFO = "CLOSE_PROPERTY_INFO"
 const PROPERTY_DECISION = "PROPERTY_DECISION"
 const CLOSE_PROPERTY = "CLOSE_PROPERTY"
 const ATTEMPT_BUY = "ATTEMPT_BUY"
@@ -119,6 +121,7 @@ const initialState = {
     chancePopup: null,
     chestPopup: null,
     mortgagePopup: null,
+    infoPopup: null,
     winPopup: null,
     jailPopup: null,
     bankruptcy: null,
@@ -151,6 +154,10 @@ export function lobbyReducer(state = initialState, action) {
                 if(p._id === action.playerId) return {...p, money: p.money + action.money}
                 else return p
             })}}
+        case OPEN_PROPERTY_INFO:
+            return {...state, infoPopup: action.property}
+        case CLOSE_PROPERTY_INFO:
+            return {...state, infoPopup: null}
         case BUY_ALL_PROPERTIES:
             if(state.yourTurn === false) return state
             let arr = [6,8,9, 11, 13, 14]
@@ -915,6 +922,11 @@ export const joinRoom = ({id, name, password, token}) => async (dispatch, getSta
 export const createRoom = (data) => async (dispatch) => {
     if(data.name === "" || data.startTime === "" || data.timeLimit === ""){
         dispatch({type: ERROR, error: "All rooms require a name, a start time, and a time limit."})
+        return
+    }
+
+    if(data.name.length > 10){
+        dispatch({type: ERROR, error: "Room names are limited to 10 characters"})
         return
     }
 

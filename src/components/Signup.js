@@ -18,6 +18,7 @@ export default function Signup(props){
     const [major, setMajor] = useState("")
     const [year, setYear] = useState("Freshman")
     const [name, setName] = useState("")
+    const [error, setError] = useState(null)
 
     //redirect to lobby page if info is already stored in cookies
     if(props.redirect && props.redirect !== "null"){
@@ -25,6 +26,12 @@ export default function Signup(props){
     }
 
     let handleSubmit = () => {
+        const maxLength = 15 //Move to config :) 
+        if(name.length > maxLength){
+            setError(`Your name must be less than ${maxLength+1} characters long`)
+            return
+        }
+        setError(null)
         props.signup({name, major, year})
     }
 
@@ -49,6 +56,7 @@ export default function Signup(props){
                             <span className={classes.text}>Name</span>
                             <input className={classes.input} type="text" style={{width: '360px'}} 
                                 value={name} onChange={(e)=>{setName(e.target.value)}}/>
+                            {error && <p className={classes.error}>{error}</p>}
                         </div>
                         <div  className={classes.subBox}>
                             <span className={classes.text}>Major</span>
@@ -78,6 +86,14 @@ export default function Signup(props){
 }
 
 const useStyles = makeStyles(() => ({
+    error: {
+        position: 'absolute',
+        top: '90px',
+        left: '245px',
+        color: 'red',
+        fontSize: '14px',
+        fontFamily: 'ChelseaMarket',
+    },
     container : {
         
     },

@@ -16,6 +16,7 @@ import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
 import TradeResult from './TradeResult';
 import BankruptcyPopup from './BankruptcyPopup';
+import PropertyInfoPopup from './PropertyInfoPopup';
 
 export default function Board(props){
     const endTurnInProgress = useSelector(state => state.lobbyReducer.endTurnInProgress)
@@ -26,6 +27,7 @@ export default function Board(props){
 
     return(
         <div className={classes.board}>
+            {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.propertyInfoPopup && <PropertyInfoPopup property={props.propertyInfoPopup} />}
             {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.show && <BankruptcyPopup />}
             {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.impossible === false && <AttemptEscapeBankruptcy />}
             {props.mortgagePopup && <MortgagePopup />}
@@ -218,6 +220,15 @@ function Dice(props){
 }
 
 const useStyles = makeStyles(() => ({
+    shadow: {
+        width: '100%',
+        height: '100%',
+        zIndex: 2,
+        backgroundColor: '#C4B299',
+        opacity: 0.3,
+        position: 'relative',
+        borderRadius: '10p'
+    },
     board: {
         width: '745px',
         height: '745px',

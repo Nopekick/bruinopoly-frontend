@@ -54,7 +54,7 @@ const useStyles = makeStyles(() => ({
         fontSize: '25px',
         fontFamily: 'VCR',
         boxSizing: 'border-box',
-        padding: '15px',
+        padding: '13px',
         textAlign: 'center'
     },
     rent: {
