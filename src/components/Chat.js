@@ -6,7 +6,7 @@ import {playerDetails} from '../config'
 
 import Plus from '@material-ui/icons/Add';
 import KReturn from '@material-ui/icons/KeyboardReturn';
-import MicNone from '@material-ui/icons/MicNone';
+// import MicNone from '@material-ui/icons/MicNone';
 import MicOff from '@material-ui/icons/MicOff';
 import Remove from '@material-ui/icons/Remove';
 
@@ -38,7 +38,8 @@ export default function About(props){
             </div>
             {open && <div className={classes.body}>
                 <div className={classes.users}>
-                    { !muted ? <MicNone className={classes.mic} onClick={toggleMute}/> : <MicOff className={classes.mic} onClick={toggleMute}/> }
+                    {/* { !muted ? <MicNone className={classes.mic} onClick={toggleMute}/> : <MicOff className={classes.mic} onClick={toggleMute}/> } */}
+                    <MicOff className={classes.mic} onClick={toggleMute}/>
                     {
                         props.playersList && props.playersList.map((user, i)=>{
                             return <Bubble key={i} color={playerDetails[i].color} name={user.name} />

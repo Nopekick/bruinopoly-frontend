@@ -58,9 +58,10 @@ const useStyles = makeStyles(() => ({
     },
     roomNumberHolder: {
         margin: "5px",
-        width: '135px',
+        width: '150px',
         height: '28px',
         textAlign: 'center',
+        zIndex: '100'
     },
     roomNumber: {
         margin: '0',
@@ -69,7 +70,7 @@ const useStyles = makeStyles(() => ({
         color: "#FFFFFF",
         //border: '1px solid #433F36',
         textShadow: '2px 2px 0px #433F36',
-        fontSize: '25px'
+        fontSize: '25px',
     },
     table: {
         height: "116px",
@@ -77,7 +78,7 @@ const useStyles = makeStyles(() => ({
         backgroundColor: '#EFE9DB',
         margin: '10px',
         borderRadius: '50%',
-        position: 'relative'
+        position: 'relative',
     },
     paw: {
         position: 'absolute',
@@ -114,7 +115,7 @@ const useStyles = makeStyles(() => ({
         margin: '5px',
         display: 'flex',
         color: '#FFFFFF',
-        fontSize: '15px',
+        fontSize: '16px',
         textShadow: '2px 2px 0px #433F36',
         flexDirection: 'column',
         alignItems: 'center'

@@ -1,8 +1,9 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import {turnLogic} from '../../reducers/lobby'
+import {turnLogic, requestGameOver, handleEndTurn, escapeBankruptcy} from '../../reducers/lobby'
+import {differenceInSeconds} from 'date-fns'
 import { makeStyles } from '@material-ui/core/styles';
-import { positions, sleep, CHEST, CHANCE } from '../../config'
+import { positions, sleep, CHEST, CHANCE, mapIdToName } from '../../config'
 import B from '../../assets/B.png';
 import Bruinopoly from '../../assets/bruinopoly.png';
 import FinAidCards from '../../assets/Financial_Aid_Cards.png';
@@ -13,22 +14,34 @@ import CardPopup from './CardPopup'
 import TradePopup from './Trade'
 import PropertyPopup from './PropertyPopup'
 import MortgagePopup from './MortgagePopup'
-import WinPopup from './WinPopup'
+import TradeResult from './TradeResult';
+import BankruptcyPopup from './BankruptcyPopup';
+import PropertyInfoPopup from './PropertyInfoPopup';
 
 export default function Board(props){
+    const endTurnInProgress = useSelector(state => state.lobbyReducer.endTurnInProgress)
+    const hideDice = useSelector(state => state.lobbyReducer.hideDice)
+    const players = useSelector(state => state.lobbyReducer.game.players)
+
     const classes = useStyles();
 
     return(
         <div className={classes.board}>
+            {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.propertyInfoPopup && <PropertyInfoPopup property={props.propertyInfoPopup} />}
+            {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.show && <BankruptcyPopup />}
+            {!props.chestPopup && !props.chancePopup && !props.propertyPopup && !props.salePopup && props.bankruptcy && props.bankruptcy.impossible === false && <AttemptEscapeBankruptcy />}
             {props.mortgagePopup && <MortgagePopup />}
             {props.salePopup && <SalePopup property={props.salePopup} />}
             {props.propertyPopup && <PropertyPopup />}
-            {props.tradePopup && <TradePopup />}
-            {props.chestPopup !== null && <CardPopup info={CHEST[props.chestPopup]} chest={true} name={props.name}/>}
-            {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup]} chance={true} name={props.name}/>}
-            {!props.salePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.double} name={props.name}/>}
-            {props.turn && <DiceBox />}
-            {props.winPopup && <WinPopup winner={props.winPopup}/>}
+            {props.tradePopup && !props.tradePopup.decision && <TradePopup />}
+            {props.tradePopup && props.tradePopup.decision && <TradeResult />}
+            {props.chestPopup !== null && <CardPopup info={CHEST[props.chestPopup.index]} id={props.chestPopup.playerId}
+                chest={true} name={mapIdToName(players, props.chestPopup.playerId)}/>}
+            {props.chancePopup !== null && <CardPopup info={CHANCE[props.chancePopup.index]} id={props.chancePopup.playerId} 
+                chance={true} name={mapIdToName(players, props.chancePopup.playerId)}/>}
+            {!props.salePopup && !props.chestPopup && !props.chancePopup && props.doubles && props.doubles.show && <CardPopup doubles={props.doubles} name={props.name}/>}
+            {props.turn && !hideDice && <DiceBox />}
+            {endTurnInProgress && <EndTurnAlerter date={endTurnInProgress} />}            
             <img draggable="false" alt="bruinopoly text" className={classes.Bruinopoly} src={Bruinopoly} />
             <img draggable="false" alt="B" className={classes.B} src={B} />
             <img draggable="false" alt="financial aid card" className={classes.FinAidCards} src={FinAidCards} />
@@ -63,9 +76,50 @@ export default function Board(props){
 
 }
 
-function DiceBox(){
+function EndTurnAlerter(props) {
+    const [timeToEnd, changeTimeToEnd] = useState(60 - differenceInSeconds(new Date(), new Date(props.date)))
+    const dispatch = useDispatch()
+    const classes = turnStyles();
+
+    useEffect(() => {
+        const interval = setInterval(()=>{
+            if(timeToEnd > 0) changeTimeToEnd(t => t - 1)
+        }, 1000)
+        const timeout = setTimeout(()=>{
+            clearInterval(interval)
+            dispatch(handleEndTurn())
+        }, timeToEnd*1000)
+
+        return () => {
+            clearInterval(interval)
+            clearTimeout(timeout)
+        }
+    }, [])
+
+    return (
+        <div className={classes.turnBox}>
+            <div className={classes.text}>Turn ending in {timeToEnd} seconds</div>
+            <button onClick={()=>{dispatch(handleEndTurn())}} className={classes.button}>END TURN</button>
+        </div>
+    )
+}
+
+function AttemptEscapeBankruptcy() {
+    const dispatch = useDispatch()
+    const classes = turnStyles();
+
+    return (
+        <div className={classes.turnBox}>
+            <button onClick={()=>{dispatch(escapeBankruptcy())}} style={{marginTop: '20px'}} className={classes.button}>ESCAPE BANKRUPTCY</button>
+        </div>
+    )
+}
+
+function DiceBox() {
     const players = useSelector(state => state.lobbyReducer.game.players)
     const user = useSelector(state => state.lobbyReducer.userInfo)
+    const {startDate, timeLimit} = useSelector(state => state.lobbyReducer.game)
+    const doubles = useSelector(state => state.lobbyReducer.doubles)
     const dispatch = useDispatch()
 
     const classes = diceStyles();
@@ -75,7 +129,14 @@ function DiceBox(){
 
     let handleRoll = async () => {
         if(haveRolled) return
+
+        //If game should end and player isn't in middle of turn (doubles), don't let turn happen and notify server
+        const end_time = new Date(startDate);
+        end_time.setMinutes(end_time.getMinutes() + Number(timeLimit));
+        const cur_time = new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"}));
+        if (cur_time >= end_time && !doubles) return dispatch(requestGameOver())
        
+        //Continue with roll logic
         let leftDice = Math.floor(Math.random()*6+1)
         let rightDice = Math.floor(Math.random()*6+1)
 
@@ -94,7 +155,7 @@ function DiceBox(){
         let movement = leftDice + rightDice
         let destination = (players.filter(p => p._id === user.id)[0].currentTile + movement) % 40
 
-        // dispatch(handleMovement())
+        await sleep(1)
         dispatch(turnLogic({movement, id: user.id, destination, doubles: leftDice === rightDice}))
     }
 
@@ -159,6 +220,15 @@ function Dice(props){
 }
 
 const useStyles = makeStyles(() => ({
+    shadow: {
+        width: '100%',
+        height: '100%',
+        zIndex: 2,
+        backgroundColor: '#C4B299',
+        opacity: 0.3,
+        position: 'relative',
+        borderRadius: '10p'
+    },
     board: {
         width: '745px',
         height: '745px',
@@ -304,4 +374,34 @@ const diceStyles = makeStyles(() => ({
         borderRadius: '50%',
         position: 'absolute'
     }
+}))
+
+const turnStyles = makeStyles(() => ({
+    turnBox: {
+        width: '170px',
+        height: '86px',
+        position: 'absolute',
+        left: '115px',
+        bottom: '115px',
+        zIndex: 4,
+    },
+    text: {
+        fontFamily: 'ChelseaMarket',
+        fontSize: '22px',
+        color: '#433F36',
+       
+    },
+    button: {
+        padding: '4px 10px',
+        textAlign: 'center',
+        fontFamily: 'ChelseaMarket',
+        fontSize: '20px',
+        borderRadius: '5px',
+        backgroundColor: '#C5B49C',
+        border: 'none',
+        cursor: 'pointer',
+        marginBottom: '10px',
+        color: 'white',
+        outline: 'none'
+    },
 }))

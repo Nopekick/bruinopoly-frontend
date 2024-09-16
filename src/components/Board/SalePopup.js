@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import {PROPERTIES, getColor} from '../../config'
 import {handlePurchase} from '../../reducers/lobby'
 import { makeStyles } from '@material-ui/core/styles';
+import PropertyInfoCard from './PropertyInfoCard';
 
 export default function SalePopup(props){
     const [canAfford, changeAfford] = useState(true)
@@ -26,7 +27,7 @@ export default function SalePopup(props){
             <div className={classes.container}>
                 <div className={classes.saleText}>FOR SALE</div>
                 <div className={classes.topBox}>${property.price}</div>
-                <div style={{display: 'flex', justifyContent: 'space-between', width: '482px', marginTop: '24px'}}>
+                <div style={{display: 'flex', flexDirection: 'row',justifyContent: 'space-between', width: '482px', marginTop: '24px'}}>
                     <div className={classes.box}>
                         <div className={classes.colorBar} style={{backgroundColor: getColor(props.property)}}></div>
                         <p className={classes.leftText} style={{marginBottom: '20px', marginTop: '15px'}}>{property.name}</p>
@@ -36,32 +37,7 @@ export default function SalePopup(props){
                              onClick={()=>{dispatch(handlePurchase({buy: false, property: props.property}))}}>SKIP</button>
                         <p className={classes.leftText}>Price: ${property.price}</p>
                     </div>
-                    <div style={{padding: '13px'}} className={classes.box}>
-                        <div className={classes.colorBox} style={{backgroundColor: getColor(props.property)}}>{property.name}</div>
-                        <p className={classes.rent} style={{marginBottom: '8px', marginTop: '13px'}}>Rent: ${property.rent}</p>
-                        {property.railroad === false && property.utility === false && <div>
-                            <div className={classes.detailBox}> 
-                                <p className={classes.rent} style={{fontSize: '16px'}}>With 1 Dorm</p>
-                                <p className={classes.rent} style={{fontSize: '16px'}}>${`${50}`}</p>
-                            </div>
-                            <div className={classes.detailBox}> 
-                                <p className={classes.rent} style={{fontSize: '16px'}}>With 2 Dorms</p>
-                                <p className={classes.rent} style={{fontSize: '16px'}}>${`${150}`}</p>
-                            </div>
-                            <div className={classes.detailBox}> 
-                                <p className={classes.rent} style={{fontSize: '16px'}}>With 3 Dorms</p>
-                                <p className={classes.rent} style={{fontSize: '16px'}}>${`${450}`}</p>
-                            </div>
-                            <div className={classes.detailBox} style={{marginBottom: '2px'}}> 
-                                <p className={classes.rent} style={{fontSize: '16px'}}>With 4 Dorms</p>
-                                <p className={classes.rent} style={{fontSize: '16px'}}>${`${650}`}</p>
-                            </div>
-                            <p className={classes.rent2}>WITH APT ${`${750}`}</p>
-                            <p className={classes.rent2}>MORTGAGE VALUE ${property.price / 2}</p>
-                            <p className={classes.rent2}>DORMS COST ${`${100}`}</p>
-                            <p className={classes.rent2}>APT, ${`${100}`} + 4 DORMS</p>
-                        </div>}
-                    </div>
+                    <PropertyInfoCard property={props.property} />
                 </div>
             </div>
         </div>
@@ -148,45 +124,11 @@ const useStyles = makeStyles(() => ({
         borderTopLeftRadius: '10px',
         borderTopRightRadius: '10px'
     },
-    colorBox: {
-        backgroundColor: '#EAACA3',
-        width: '203px',
-        height: '75px',
-        color: '#433F36',
-        fontSize: '25px',
-        fontFamily: 'VCR',
-        boxSizing: 'border-box',
-        padding: '15px',
-        textAlign: 'center'
-    },
     leftText: {
         fontFamily: 'ChelseaMarket',
         fontSize: '26px',
         color: '#433F36',
         fontWeight: 400,
         textAlign: 'center'
-    },
-    rent: {
-        fontFamily: 'VCR',
-        fontSize: '22px',
-        color: '#433F36',
-        fontWeight: 400,
-        textAlign: 'center',
-    },
-    rent2: {
-        fontFamily: 'VCR',
-        fontSize: '16px',
-        color: '#7A6E5D',
-        fontWeight: 400,
-        textAlign: 'center',
-        margin: 0,
-        marginBottom: '6px'
-    },
-    detailBox: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '202px',
-        height: '28px',
     },
 }))

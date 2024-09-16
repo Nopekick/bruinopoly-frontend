@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux'
 import {PROPERTIES, getColor} from '../../config';
@@ -37,15 +37,15 @@ export default function MortgagePopup(props){
                 <div className={classes.box}>
                     <div className={classes.colorBar}>{player.name}</div>
                     <div style={{height: '300px', overflow: 'scroll'}}>
-                    {me.propertiesOwned.map((p, i)=>{
+                    {me.propertiesOwned.filter((p) => properties[p].dormCount === 0).map((p, i)=>{
                             if(properties[p].isMortgaged)
                                 return <div className={classes.wholeBox} key={i}>
-                                            <div key={i} className={classes.propertyBox}>
+                                            <div className={classes.propertyBox}>
                                                 <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                                 <p className={classes.text}>{PROPERTIES[p].name}</p>
                                             </div>
-                                            <div className={classes.mortgageBox} key={i}> 
-                                                <img src={mortgageImg} className={classes.mortgagePic}/>
+                                            <div className={classes.mortgageBox}> 
+                                                <img src={mortgageImg} alt="mortgage" className={classes.mortgagePic}/>
                                             </div>
                                             <button onClick={()=>{handleMortgage(p, "LIFT MORTGAGE")}} className={classes.transactionButton}
                                                 style={(me.money < PROPERTIES[p].mortgage * 1.1) ? {opacity: '0.4', cursor: 'default'} : null}>
@@ -55,13 +55,13 @@ export default function MortgagePopup(props){
                                 
                             else 
                             return <div className={classes.wholeBox} key={i}>
-                                <div key={i} className={classes.propertyBox}>
+                                <div className={classes.propertyBox}>
                                     <div style={{backgroundColor: getColor(p)}} className={classes.typeBox}></div>
                                     <p className={classes.text}>{PROPERTIES[p].name}</p>
                                 </div>
                                 <div className={classes.boxOfBoxes}>
                                     <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
-                                        <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 1 ? "#72E7DA" : 'none'}}>{properties[p].dormCount}</div>
+                                        <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 1 ? "#72E7DA" : 'none'}}></div>
                                         <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 2 ? "#72E7DA" : 'none'}}></div>
                                         <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 3 ? "#72E7DA" : 'none'}}></div>
                                         <div className={classes.fillInBox} style={{backgroundColor: properties[p].dormCount >= 4 ? "#72E7DA" : 'none'}}></div>

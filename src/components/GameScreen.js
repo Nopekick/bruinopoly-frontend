@@ -1,19 +1,31 @@
-import React from 'react';
-import { useSelector } from 'react-redux'
-import Board from '../containers/Board';
+import React, {useEffect} from 'react';
+import { useSelector, useDispatch } from 'react-redux'
 import {Redirect} from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles';
-import Sidebar from './Sidebar';
-import Chat from './Chat';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import decode from 'jwt-decode'
+import { mapIdToName, ENV } from '../config';
+import { checkSocket, handleCardDraw } from '../reducers/lobby';
+
+import ErrorPopup from './ErrorPopup'
+import Board from '../containers/Board';
+import Sidebar from './Sidebar';
+import WinPopup from './Board/WinPopup'
+import JailPopup from './Board/JailPopup';
+import Chat from './Chat';
 
 import paw from '../assets/loadingpaw.png';
 
 export default function GameScreen(props){
     const classes = useStyles();
+    const dispatch = useDispatch();
     const token = useSelector(state => state.lobbyReducer.token)
+    const socket = useSelector(state => state.lobbyReducer.socket)
     const heightMatch = useMediaQuery('(max-height:800px)');
+    
+    useEffect(() => {
+        dispatch(checkSocket())
+    }, [socket])
 
     let handleStart = () => {
         props.requestStart()
@@ -36,14 +48,29 @@ export default function GameScreen(props){
 
     return(
         <div className={classes.main}>
-            <div className={classes.topBar}><p style={{display: 'inline-block', margin: 0, padding: 0, paddingLeft: '30px', fontSize: 23, 
-                color: 'purple', cursor: 'pointer', paddingTop: '12px'}} onClick={handleLeave}>Leave Lobby (Testing)</p></div>
+            {props.error && <ErrorPopup message={props.error} />}
+            {props.jailPopup && <JailPopup />}
+            {props.winPopup && <WinPopup winner={props.winPopup}/>}
+            <div className={classes.topBar}>
+                {ENV !== "PROD" && <p className={classes.testingLeave} onClick={handleLeave}>Leave Lobby (Testing)</p>}
+                {ENV === "LOCAL" && props.game.hasStarted && <button className={classes.drawButton} onClick={()=>{dispatch(handleCardDraw("CHEST", props.user.id, 2))}}>Draw Chest</button>}
+                {ENV === "LOCAL" && props.game.hasStarted && <button className={classes.drawButton} onClick={()=>{dispatch(handleCardDraw("CHANCE", props.user.id, 2))}}>Draw Chance</button>}
+                {props.game.hasStarted && props.game.currentTurn && <p className={classes.currentTurn}>Current Turn: {mapIdToName(props.game.players, props.game.currentTurn)}</p>}
+            </div>
             <Sidebar user={props.user} started={props.game.hasStarted} game={props.game} players={props.players}/>
             {!props.game.hasStarted && <div className={classes.loadingContainer}>
                 <img alt="paw" className={classes.paw} src={paw}/>
-                <div className={classes.loadingText}>{`GAME WILL BEGIN AFTER ${props.game.startTime}`}</div>
-                {props.host && checkDecode() && <button className={classes.startButton} onClick={handleStart}>Start Game</button>}
-                <button className={classes.startButton} onClick={handleLeave}>Leave Lobby</button>
+                <div className={classes.loadingText}>{`GAME CAN START AFTER ${props.game.startTime}`}</div>
+                {props.host && checkDecode() && 
+                    <button className={classes.startButton} style={{display: 'flex', flexDirection: 'column'}} onClick={handleStart}>
+                        <div>Start Game</div>
+                        <div style={{fontSize: '10px'}}>(you are the lobby leader)</div>
+                    </button>
+                }
+                <button className={classes.startButton} onClick={handleLeave} style={{display: 'flex', flexDirection: 'column'}} >
+                        <div>Leave Lobby</div>
+                        {props.host && checkDecode() && <div style={{fontSize: '10px'}}>(forfeit lobby leader)</div>}
+                </button>
             </div>}
             {props.game.hasStarted && <div className={classes.board} style={heightMatch ? {transform: 'scale(.88)', top: '50px'} : null}>
                 <Board />
@@ -62,6 +89,27 @@ const useStyles = makeStyles(() => ({
         width: '100vw',
         boxSizing: 'border-box',
         overflow: 'hidden'
+    },
+    testingLeave: {
+        display: 'inline-block', 
+        margin: 0,
+        padding: 0, 
+        paddingLeft: '30px', 
+        fontSize: 23, 
+        color: 'purple', 
+        cursor: 'pointer', 
+        paddingTop: '12px'
+    },
+    currentTurn: {
+        display: 'inline-block', 
+        margin: 0,
+        padding: 0, 
+        paddingRight: '120px', 
+        float: 'right',
+        paddingTop: '12px',
+        fontFamily: 'ChelseaMarket',
+        fontSize: '25px',
+        color: '#433F36',
     },
     board: {
         position: 'absolute',
@@ -85,6 +133,24 @@ const useStyles = makeStyles(() => ({
         outline: 'none',
         cursor: 'pointer',
         marginTop: '20px'
+    },
+    drawButton: {
+        color: 'white',
+        width: '180px',
+        padding: '5px',
+        backgroundColor: '#7A6E5D',
+        borderRadius: '9px',
+        fontSize: '20px',
+        textShadow: '2px 2px 0px rgba(0, 0, 0, 0.25)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'ChelseaMarket',
+        border: 'none',
+        outline: 'none',
+        cursor: 'pointer',
+        display: 'inline-block',
+        marginLeft: '20px'
     },
     topBar: {
         height: '52px',

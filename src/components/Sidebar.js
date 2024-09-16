@@ -8,34 +8,35 @@ import mortgage from '../assets/mortgage.png'
 import home from '../assets/home.png'
 import trade from '../assets/trade.png'
 import {playerDetails} from '../config'
-import {parseISO, differenceInSeconds} from 'date-fns'
+import {differenceInSeconds} from 'date-fns'
 
 export default function Sidebar(props){
     const mortgagePopup = useSelector(state => state.lobbyReducer.mortgagePopup)
     const propertyPopup = useSelector(state => state.lobbyReducer.propertyPopup)
     const tradePopup = useSelector(state => state.lobbyReducer.tradePopup)
+    const jailCards = useSelector(state => state.lobbyReducer.jailCards)
 
     const classes = useStyles();
     const turn = useSelector(state => state.lobbyReducer.yourTurn)
-    const players = useSelector(state => state.lobbyReducer.game.players)
-    const player = useSelector(state => state.lobbyReducer.userInfo)
     const [timeLeft, setTimeLeft] = useState("00:00")
     const dispatch = useDispatch()
 
     useEffect(()=>{
-        let diffSec = differenceInSeconds(parseISO(props.game.startDate), new Date())
-        console.log("start time:",parseISO(props.game.startDate))
-
-        if(diffSec/60 > 60){
-            setTimeLeft("60:00+")
-        } else if(diffSec <= 0){
+        let diffSec = differenceInSeconds(new Date(props.game.startDate), new Date(new Date().toLocaleString('en-US', {timeZone: "America/Los_Angeles"})))
+        if(diffSec <= 0) {
             setTimeLeft("00:00")
+        } else if(diffSec/60 > 60){
+            setTimeLeft("60:00+")
         } else {
-            setTimeLeft(`${Math.floor(diffSec/60)}:${diffSec % 60}`) 
+            let sec = (diffSec % 60)
+            setTimeLeft(`${Math.floor(diffSec/60)}:${sec<10? ("0"+sec) : sec}`) 
         }
-
+        
         let interval = setInterval(()=>{
-            if(diffSec <= 0) return;
+            if(diffSec <= 0) {
+                setTimeLeft("00:00")
+                return clearInterval(interval);
+            } 
 
             diffSec -= 1
 
@@ -43,7 +44,7 @@ export default function Sidebar(props){
                 setTimeLeft("60:00+")
             } else {
                 let sec = (diffSec % 60)
-                setTimeLeft(`${Math.floor(diffSec/60)}:${sec<10? ("0"+sec) :sec}`) 
+                setTimeLeft(`${Math.floor(diffSec/60)}:${sec<10? ("0"+sec) : sec}`) 
             }
         }, 1000)
 
@@ -82,6 +83,7 @@ export default function Sidebar(props){
         <div className={classes.container}>
             <div className={classes.bruinopoly}>BRUINOPOLY</div>
             <div className={classes.name}>{props.game.name.toUpperCase()}</div>
+            {!props.started && <div className={classes.name} style={{fontSize: '25px'}}>{props.game.timeLimit} MINUTE GAME</div>}
             {!props.started && <div>
                 <div className={classes.timeLeft}>
                     <img alt="clock" src={clock} className={classes.clock}></img>
@@ -89,27 +91,40 @@ export default function Sidebar(props){
                 </div>
                 <div className={classes.playersText}>PLAYERS</div>
                 {props.players && props.players.map((player, i)=>{
-                    return <div key={i} className={classes.playersNames}>{player.name.toUpperCase()}</div>
+                    return <div key={i} className={classes.playersNames}>{player.name.toUpperCase()} {props.game.host.hostName === player.name && " (HOST)"}</div>
                 })}
             </div>}
             {props.started && <div className={classes.gameSidebar}>
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '35px'}}>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px'}}>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.buy) ? {backgroundColor: "#F15B45"} : null}
-                        onClick={()=> handleOpenProperty(true)}>+<img className={classes.actionImage} alt="action buy" src={home} /></div>
+                        onClick={()=> handleOpenProperty(true)}>
+                            <span className={classes.tooltiptext}>Buy Dorms</span>
+                            +<img className={classes.actionImage} alt="action buy" src={home} />
+                    </div>
                     <div className={classes.actionButton} style={(propertyPopup && propertyPopup.sell) ? {backgroundColor: "#F15B45"} : null}
-                        onClick={()=> handleOpenProperty(false)}>-<img className={classes.actionImage} alt="action sell" src={home} /></div>
+                        onClick={()=> handleOpenProperty(false)}>
+                            <span className={classes.tooltiptext}>Sell Dorms</span>
+                            -<img className={classes.actionImage} alt="action sell" src={home} />
+                    </div>
                     <div className={classes.actionButton} style={tradePopup ? {backgroundColor: "#F15B45"} : null} 
-                        onClick={handleTrade}><img style={{height: '44px'}} className={classes.actionImage} alt="action trade" src={trade} /></div>
+                        onClick={handleTrade}>
+                            <span className={classes.tooltiptext}>Trade</span>
+                            <img style={{height: '44px'}} className={classes.actionImage} alt="action trade" src={trade} />
+                    </div>
                     <div className={classes.actionButton} style={(mortgagePopup) ? {backgroundColor: "#F15B45"} : null}
-                        onClick={handleOpenMortgage}><img className={classes.actionImage} alt="action mortgage" src={mortgage} /></div>
+                        onClick={handleOpenMortgage}>
+                            <span className={classes.tooltiptext}>Mortgage Properties</span>
+                            <img className={classes.actionImage} alt="action mortgage" src={mortgage} />
+                    </div>
                 </div>
-                <Bruincard user={props.game.players.find((player)=> player._id === props.user.id)} info={[props.user.id, props.game.players]} />
+                <Bruincard user={props.game.players.find((player)=> player._id === props.user.id)} info={[props.user.id, props.game.players]} jailCards={jailCards} />
                 <div className={classes.nameBox}>
                     {props.game && props.game.players.map((player, i) => {
                         if(player._id === props.user.id) return null;
-                        return <PlayerBanner key={i} name={player.name} money={player.money} token={playerDetails[i].img} />
+                        return <PlayerBanner color={playerDetails[i].color} turn={player._id === props.game.currentTurn} key={i}
+                            name={player.name} money={player.money} token={playerDetails[i].img} bankrupt={player.isBankrupt} />
                     })}
-                </div>
+                </div> 
             </div>}
         </div>
     )
@@ -135,13 +150,47 @@ const useStyles = makeStyles(() => ({
         justifyContent: 'center',
         fontSize: '34px',
         color: 'white',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        position: 'relative',
+        '&:hover': {
+            '& $tooltiptext': {
+                visibility: 'visible'
+            }
+        }
+    },
+    tooltiptext: {
+        visibility: 'hidden',
+        fontFamily: 'VCR',
+        width: '180px',
+        backgroundColor: '#F7F2E7',
+        fontWeight: 'normal',
+        color: '#433F36',
+        textAlign: 'center',
+        padding: '10px 5px',
+        borderRadius: '6px',
+        position: 'absolute',
+        zIndex: '1',
+        bottom: '106%',
+        left: '80%',
+        marginLeft: '-60px',
+        fontSize: '19px',
+        border: '1px solid #C4B299',
+        "&::after": {
+            content: "''",
+            position: 'absolute',
+            top: '102%',
+            left: '23%',
+            marginLeft: '-5px',
+            borderWidth: '12px',
+            borderStyle: 'solid',
+            borderColor: '#C4B299 transparent transparent transparent'
+        }
     },
     actionImage: {
         height: '56px'
     },
     gameSidebar: {
-        paddingTop: '30px'
+        paddingTop: '20px'
     },
     bruinopoly: {
         fontFamily: 'ChelseaMarket',
@@ -184,8 +233,8 @@ const useStyles = makeStyles(() => ({
         lineHeight: '28px'
     },
     nameBox: {
-        marginTop: '14px',
-        height: '380px',
-        overflow: 'scroll'
+        marginTop: '10px',
+        height: '195px',
+        overflowY: 'scroll'
     }
 }))

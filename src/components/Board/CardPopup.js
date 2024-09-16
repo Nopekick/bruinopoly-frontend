@@ -1,21 +1,40 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useEffect, useRef, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux'
 
 export default function CardPopup(props){
     const classes = useStyles();
     const wrapperRef = useRef(null);
+    const dispatch = useDispatch()
     useOutsideAlerter(wrapperRef);
 
-    let doubleText = props.doubles && props.doubles === 3 ? "YOU ROLLED A DOUBLE THREE TIMES IN A ROW. GO TO MURPHY" : "YOU ROLLED A DOUBLE. ROLL AGAIN"
-    console.log(props)
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if(props.chest) {
+                dispatch({type: "CLOSE_CHEST"})
+            } else if(props.chance) {
+                dispatch({type: "CLOSE_CHANCE"})
+            } else if(props.doubles) {
+                dispatch({type: "CLOSE_DOUBLES"})
+            }
+        }, 5000)
+
+        return () => { clearTimeout(timeout) }
+    }, [])
+
+    const doubleText = props.doubles && props.doubles.number === 3 ? "YOU ROLLED A DOUBLE THREE TIMES IN A ROW. GO TO MURPHY" : "YOU ROLLED A DOUBLE. ROLL AGAIN"
+   
     return(
         <div  style={{width: '100%', height: '100%'}}>
             <div className={classes.shadow}></div>
             <div ref={wrapperRef} className={classes.container} style={{backgroundColor: props.chance ? "#F5D34D" : (props.chest ? "#A8DDD7" : "#7A6E5D")}}>
-                <p className={classes.titleText}>{props.chance ? "EXCUSE ME SIR" : (props.chest ? "FINANCIAL AID OFFICE" : "ROLL AGAIN")}</p>
+                <p className={classes.titleText}>
+                    {props.chance ? "EXCUSE ME SIR" : (props.chest ? "FINANCIAL AID OFFICE" : (props.doubles && props.doubles.number === 3 ? "GO TO MURPHY" : "ROLL AGAIN!"))}
+                </p>
                 <div className={classes.subBox}>
-                    <p className={classes.innerText} style={{color: '#433F36', marginBottom: '12px'}}>{props.name}</p>
+                    <p className={classes.innerText} style={{color: '#433F36', marginBottom: '12px'}}>
+                       {props.name}
+                    </p>
                     <p className={classes.innerText} style={{color: '#7A6E5D'}}>{props.info ? props.info.text.toUpperCase() : doubleText}</p>
                 </div>
             </div>
@@ -29,15 +48,13 @@ export default function CardPopup(props){
 const useStyles = makeStyles(() => ({
     container: {
         width: '524px',
-        height: '305px',
         borderRadius: '10px',
         boxShadow: '4px 4px 13px rgba(0, 0, 0, 0.15)',
         position: 'absolute',
         top: '220px',
         left: '108px',
         zIndex: 5,
-        padding: '22px',
-        boxSizing: 'border-box',
+        padding: '22px 1px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -61,22 +78,22 @@ const useStyles = makeStyles(() => ({
     },
     subBox: {
         width: '478px',
-        height: '203px',
+        minHeight: '203px',
         backgroundColor: '#F7F2E7',
         borderRadius: '10px',
         marginTop: '15px',
         paddingTop: '10px',
         overflow: 'scroll',
-        boxSizing: 'border-box'
     },
     innerText: {
         fontFamily: 'VCR',
-         fontSize: '25px',
-         fontWeight: 400,
-         margin: 'auto',
-         textAlign: 'center',
-         lineHeight: '34px',
-         maxWidth: '85%'
+        fontSize: '25px',
+        fontWeight: 400,
+        margin: 'auto',
+        textAlign: 'center',
+        lineHeight: '34px',
+        maxWidth: '90%',
+        paddingBottom: '10px'
     }
 }))
 

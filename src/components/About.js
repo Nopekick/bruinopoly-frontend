@@ -18,30 +18,27 @@ export default function About(props){
                 <div className={classes.roomsText} style={{backgroundColor: '#A8DDD7', cursor: 'pointer'}} onClick={()=> props.history.push("/")}><div>Back to Lobby</div></div>
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Overview:</div></div>
                 <div className={classes.text}>Bruinopoly, a UCLA-themed monopoly game, was initially a DevX project that aimed to bring together UCLA students during the pandemic and 
-                    make it easier for people to meet new people and make friends. The group responsible for creating Bruinopoly fell apart before it could be launched. I've released
-                    it in this state to gauge interest and see whether I should invest time into improving it.</div>
+                    make it easier for people to meet new people and make friends. The project was never finished, but now it's been resurrected. Please enjoy!</div>
                 <div className={classes.roomsText} style={{backgroundColor: '#DC9F96'}}><div>Current State of Bruinopoly:</div></div>
-                <div className={classes.text}>The game is somewhat playable. There are features such as property buying, dorms and apartments to increase rent prices, mortgaging, and trading.
-                    There are also a lot of issues with the game. As they are fixed, they should be removed from here .
+                <div className={classes.text}>The game may have bugs, but it should be fully playable. I'll try to continue polishing the game and resolve issues as they come to my attention.
                 </div>
-                <div className={classes.text}>IMPORTANT (Read this)
-                    <ul>
-                        <li>Only the person who creates a game can start it. Leaving your game lobby will prevent you from starting the game after rejoining. 
-                            Therefore, don't leave a game lobby after joining if you are the host.</li>
-                        <li>Various bugs may cause the game to be unplayable. In order to reset the website, open the Javascript console (option-command-J on Macs) and 
-                            type in 'localStorage.clear()', then press 'Enter'. You should be taken back to the welcome page.</li>
-                    </ul> 
-                </div>
+                <ul className={classes.text}>
+                    <li>
+                        If the game enters an unplayable state, do the following to reset everything: open the Javascript console (option-command-J on Macs) and 
+                            type in 'localStorage.clear()', then press 'Enter'. Reload the page, and you should be taken back to the welcome page.
+                    </li> 
+                    <li>
+                        The game is meant to be played on a laptop and probably looks strange or is unplayable on different platforms (phone, PC). This is because the styling 
+                        was only done on a laptop. Also, fullscreen the browser when playing. 
+                    </li> 
+                    <li>
+                        I don't want to pay for server hosting so I'm using a free hosting solution, Render (rip Heroku). Render spins down the server instance after 15 minutes 
+                        of inactivity, and it may take up to a minute or two to access the site after periods of inactivity due to the server restarting. 
+                    </li> 
+                </ul>
                 <div className={classes.text}>Known Issues:
                     <ul>
-                        <li>Drawing cards does nothing</li>
-                        <li>Notification of duplicates overlaps with drawn card</li>
-                        <li>No handling of bankrupty: money can go negative</li>
-                        <li>Wealth calculation for determining winner is incorrect</li>
                         <li>No handling of players leaving a game once it has started</li>
-                        <li>Player tokens overlap on most tiles</li>
-                        <li>During a game, websocket connection to server may close for someone, leaving game unplayable for all</li>
-                        <li>Time countdown until designated start time is incorrect, due to issues with time server side</li>
                     </ul> 
                 </div>
             </div>
